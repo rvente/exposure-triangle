@@ -55,6 +55,28 @@ branching is the primary HW11 iteration.
 - **Ported content to JSON.** `data/lessons.json` (3 lessons) and `data/quizzes.json` (5 quizzes with second-chance mechanic). No content is hard-coded in HTML — each route renders from the JSON.
 - **Tests.** Reducer unit tests cover state transitions and scoring edge cases. Playwright e2e test walks the full click-through under `xvfb-run`.
 
+## Note on the reducer
+
+Writing the core as a `reduce(state, event)` pure function looks like
+overkill for an app this small, but the call paid for itself quickly:
+
+1. **Speed.** The reducer was fast to write — once the state shape was
+   named, each event became a 3–5 line case. The bulk of the work was
+   content (lessons + quizzes JSON), not control flow.
+2. **Testability under branching paths.** Adaptive difficulty (HW11) turns
+   the quiz into a branching tree rather than a fixed sequence. A pure
+   reducer means I can unit-test every branch in isolation without
+   spinning up Flask, Playwright, or a DB — just feed it events and assert
+   on the returned state.
+3. **Two-backend symmetry → local-first deployment.** The `Backend`
+   interface (`static/js/backend.js`) has a `FlaskBackend` and a stub
+   `LocalBackend`. Because the reducer is pure JS/Python-portable logic,
+   the `LocalBackend` can run the same transitions entirely in the browser
+   with `localStorage` — no server required. That lets the site be
+   statically served (e.g. Cloudflare Pages) and run local-first, which
+   matters for learner accessibility: no account, no network, no
+   tracking. The reducer is the shared kernel that makes both paths real.
+
 ## Rubric checklist
 
 - [x] Flask backend, HTML/JS/jQuery/Bootstrap frontend.
