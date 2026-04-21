@@ -6,10 +6,11 @@ Built as part of COMSW4170 (User Interface Design) at Columbia CVN, Spring 2026.
 
 ## Contents
 
-| File | Purpose |
+| Path | Purpose |
 |------|---------|
-| `exposure_triangle.pptx` | Lo-Fi prototype as PowerPoint; opens in PowerPoint or imports into Google Slides |
-| `hw10_warmup.pdf` | HW10 warm-up submission — iteration rationale and HW10 main-assignment implementation plan |
+| `writeup/exposure_triangle.pptx` | Lo-Fi prototype as PowerPoint; opens in PowerPoint or imports into Google Slides |
+| `writeup/hw10_warmup.pdf` | HW10 warm-up submission — iteration rationale and HW10 main-assignment implementation plan |
+| `writeup/hw10_main.md`, `writeup/hw10_main.pdf` | HW10 main submission writeup — responsibilities, video link, rubric checklist |
 | `app.py`, `reducer.py`, `state_store.py`, `templates/`, `static/`, `data/` | HW10 main — Flask technical prototype |
 | `tests/` | Reducer unit tests + Playwright click-through e2e test |
 

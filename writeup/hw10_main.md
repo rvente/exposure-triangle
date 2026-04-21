@@ -37,8 +37,16 @@ Solo CVN group of 1 — every role below was filled by me (Blake Vente, rv2459).
 ## Low-fidelity prototype
 
 The final low-fi prototype was submitted with the HW10 warm-up
-(`hw10_warmup.pdf` in this repo; PowerPoint source is
-`exposure_triangle.pptx`). The implementation lines up 1:1 with it.
+(`writeup/hw10_warmup.pdf`; PowerPoint source is
+`writeup/exposure_triangle.pptx`). The HW10 technical prototype covers the
+core teaching-and-quiz flow shown in the lo-fi.
+
+**Not yet implemented (next up, HW11):** the lo-fi also sketches an adaptive-
+difficulty path where wrong quiz answers route the learner to an easier
+variant and right answers unlock harder variants. For HW10 the quiz uses a
+fixed 5-question sequence with a second-chance mechanic (first wrong grays
+out the option; second wrong reveals the correct answer). The adaptive
+branching is the primary HW11 iteration.
 
 ## What I did this week
 
