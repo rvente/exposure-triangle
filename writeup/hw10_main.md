@@ -20,6 +20,12 @@ requires (home → 3 lessons → 5 quizzes → result).
 
 ~1 min click-through: <https://youtu.be/17tHtb9QTxc>
 
+## Commit screenshot
+
+GitHub view of the HW10 Flask-prototype commit on <https://github.com/rvente/exposure-triangle>:
+
+![Commit eb502bf on rvente/exposure-triangle — HW10 main: Flask technical prototype (47 files changed)](commit_screenshot.png)
+
 ## Group — responsibilities
 
 Solo CVN group of 1 — every role below was filled by me (Blake Vente, rv2459).
