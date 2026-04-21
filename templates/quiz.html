@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Quiz {{ quiz_n }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <span class="text-muted small">Quiz {{ quiz_n }} of {{ total }}</span>
+  <span class="text-muted small">Category: {{ quiz.category }}</span>
+</div>
+
+{% if quiz.image %}
+<div class="text-center mb-3">
+  <img src="{{ url_for('static', filename=quiz.image) }}" alt="{{ quiz.image_alt }}" class="img-fluid rounded" style="max-height: 380px;">
+</div>
+{% endif %}
+
+<p class="lead">{{ quiz.setup }}</p>
+<h2 class="h4 mb-3">{{ quiz.burn_in.prompt }}</h2>
+
+<form method="post" id="quiz-form" data-qid="{{ quiz_n }}" data-locked="{{ 'true' if feedback and feedback.locked else 'false' }}">
+  <div class="quiz-options d-grid gap-2" id="quiz-options">
+    {% for opt in quiz.burn_in.options %}
+    <button type="submit"
+            name="choice"
+            value="{{ opt.id }}"
+            class="btn btn-outline-primary text-start quiz-option{% if feedback and feedback.locked and feedback.correct_choice == opt.id %} correct{% endif %}{% if selected == opt.id and feedback and not feedback.correct %} {{ 'incorrect' if feedback.locked else 'disabled-wrong' }}{% endif %}"
+            data-opt-id="{{ opt.id }}"
+            {% if feedback and feedback.locked %}disabled{% endif %}>
+      {{ opt.text }}
+    </button>
+    {% endfor %}
+  </div>
+
+  {% if feedback %}
+  <div class="quiz-feedback mt-3" id="quiz-feedback">
+    {% if feedback.correct %}
+      <div class="text-success">Correct!</div>
+    {% elif feedback.locked %}
+      <div class="text-danger">{{ quiz.burn_in.reveal_on_wrong }}</div>
+    {% else %}
+      <div class="text-warning">{{ quiz.burn_in.hint_on_wrong }}</div>
+    {% endif %}
+  </div>
+  {% endif %}
+</form>
+
+{% if feedback and feedback.locked %}
+<form method="post" class="mt-3">
+  <input type="hidden" name="action" value="advance">
+  <button id="advance-btn" class="btn btn-primary" type="submit">Advance</button>
+</form>
+{% endif %}
+{% endblock %}

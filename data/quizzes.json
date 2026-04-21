@@ -1,0 +1,91 @@
+{
+  "1": {
+    "category": "iris",
+    "image": "renders/bokeh_f1.2.avif",
+    "image_alt": "Shallow-focus photo with soft bokeh",
+    "setup": "This photo has a blurry background and the foreground subject is in focus. Background lights have turned into soft bokeh circles.",
+    "burn_in": {
+      "prompt": "Which Camera Iris setting was used?",
+      "options": [
+        {"id": "a", "text": "Wide open Camera Iris"},
+        {"id": "b", "text": "Very closed Camera Iris"},
+        {"id": "c", "text": "Moderate Camera Iris"}
+      ],
+      "correct": "a",
+      "hint_on_wrong": "Look at the blurry background — think about which Iris setting produces shallow focus and bokeh.",
+      "reveal_on_wrong": "A wide-open Camera Iris creates shallow depth of field and bokeh. Closed or moderate would keep more of the scene in focus."
+    },
+    "variants": {}
+  },
+  "2": {
+    "category": "duration",
+    "image": "renders/shutter_low.avif",
+    "image_alt": "Photo showing motion streaking on a moving subject",
+    "setup": "This photo shows visible motion streaking on the moving subject.",
+    "burn_in": {
+      "prompt": "How would you freeze the motion?",
+      "options": [
+        {"id": "a", "text": "Use a longer Capture Duration"},
+        {"id": "b", "text": "Use a shorter Capture Duration"},
+        {"id": "c", "text": "Increase Sensor Sensitivity"}
+      ],
+      "correct": "b",
+      "hint_on_wrong": "Think about how the length of the capture window relates to motion. A shorter window means less time for things to move across the frame.",
+      "reveal_on_wrong": "A shorter Capture Duration freezes motion. Longer would streak more; sensitivity controls noise, not motion."
+    },
+    "variants": {}
+  },
+  "3": {
+    "category": "sensitivity",
+    "image": "renders/iso_high.avif",
+    "image_alt": "Grainy low-light photo",
+    "setup": "You're indoors at night. Your Camera Iris is already wide open and your Capture Duration is as long as you can hold steady.",
+    "burn_in": {
+      "prompt": "What do you adjust to brighten the image?",
+      "options": [
+        {"id": "a", "text": "Open the Camera Iris wider"},
+        {"id": "b", "text": "Lengthen the Capture Duration"},
+        {"id": "c", "text": "Raise Sensor Sensitivity"}
+      ],
+      "correct": "c",
+      "hint_on_wrong": "Re-read the setup — two of those controls are already maxed out.",
+      "reveal_on_wrong": "The Camera Iris and Capture Duration are already at their limits. Sensor Sensitivity is the only remaining control."
+    },
+    "variants": {}
+  },
+  "4": {
+    "category": "combo",
+    "image": "renders/bokeh_f1.2.avif",
+    "image_alt": "Shallow-focus photo with clean, sharp subject",
+    "setup": "Look at this photo carefully. The foreground subject is in focus, the background is blurry with bokeh, and there is no motion streaking or noise.",
+    "burn_in": {
+      "prompt": "Which settings produced this?",
+      "options": [
+        {"id": "a", "text": "Wide open Camera Iris, short Capture Duration, low Sensor Sensitivity"},
+        {"id": "b", "text": "Very closed Camera Iris, long Capture Duration, high Sensor Sensitivity"},
+        {"id": "c", "text": "Moderate Camera Iris, medium Capture Duration, medium Sensor Sensitivity"}
+      ],
+      "correct": "a",
+      "hint_on_wrong": "Check each quality separately: depth of field, motion, noise. Then match them to settings.",
+      "reveal_on_wrong": "Blurry background = wide-open Iris. No motion streaking = short Capture Duration. No grain = low Sensitivity."
+    },
+    "variants": {}
+  },
+  "5": {
+    "category": "duration",
+    "image": "renders/paul-pastourmatzis-mwWJul4WkqU-unsplash.avif",
+    "image_alt": "Night sky star trails (reference photo, shown alongside option B)",
+    "setup": "Both of these night sky photos were taken with a tripod. Which one used the longer Capture Duration?",
+    "burn_in": {
+      "prompt": "Which one used the longer Capture Duration?",
+      "options": [
+        {"id": "a", "text": "A — stars are sharp points (Milky Way)"},
+        {"id": "b", "text": "B — stars are smeared into arcs (star trails)"}
+      ],
+      "correct": "b",
+      "hint_on_wrong": "Which photo shows stars drawn as long lines?",
+      "reveal_on_wrong": "Star trails are individual stars smeared by Earth's rotation during a very long Capture Duration."
+    },
+    "variants": {}
+  }
+}

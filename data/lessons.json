@@ -1,0 +1,41 @@
+{
+  "1": {
+    "id": "iris",
+    "title": "Camera Iris",
+    "technical_term": "aperture / f-stop",
+    "body_md": "**Your eyes already do this.** Squinting makes distant things a little sharper — but also darker. The Camera Iris works the same way: wide open lets in more light but blurs the background; very closed keeps everything in focus but needs more light.\n\nThe side effect of a wide-open Camera Iris can be beautiful: background lights turn into soft glowing circles called *bokeh*.",
+    "images": [
+      {"src": "renders/bokeh_f1.2.avif", "label": "Wide open — shallow focus, strong bokeh"},
+      {"src": "renders/bokeh_f5.6.avif", "label": "Moderate — balanced"},
+      {"src": "renders/bokeh_f22.0.avif", "label": "Very closed — deep focus"}
+    ],
+    "metaphor_line": "The sensor is a bucket — the Camera Iris is how wide the mouth opens.",
+    "next": "/learn/2"
+  },
+  "2": {
+    "id": "duration",
+    "title": "Capture Duration",
+    "technical_term": "shutter speed",
+    "body_md": "The Camera Iris controls how *wide* the light stream is. The **Capture Duration** controls how *long* the sensor collects light.\n\nSports photographers use a short Capture Duration to freeze action. Night photographers use a long one to gather light trails.\n\nA long Capture Duration makes moving subjects **streak** across the frame — we call this *motion streaking* in this lesson.",
+    "images": [
+      {"src": "renders/motion_s0.0.avif", "label": "Short — motion frozen"},
+      {"src": "renders/motion_s1.2.avif", "label": "Medium — some streaking"},
+      {"src": "renders/motion_s3.5.avif", "label": "Long — heavy motion streaking"}
+    ],
+    "metaphor_line": "The Capture Duration is how long the bucket sits in the rain.",
+    "next": "/learn/3"
+  },
+  "3": {
+    "id": "sensitivity",
+    "title": "Sensor Sensitivity",
+    "technical_term": "ISO",
+    "body_md": "You've opened the Camera Iris wide. The Capture Duration is as long as you can hold steady. It's still too dark.\n\nThe last option: make the sensor **more sensitive to light**. It amplifies the signal — but also amplifies noise.\n\nSensitivity is the last resort: a noisy photo is better than a completely dark one. You can always reduce noise in editing — you can't add light that wasn't captured.",
+    "images": [
+      {"src": "renders/iso_low.avif", "label": "Low — clean, needs lots of light"},
+      {"src": "renders/iso_med.avif", "label": "Medium — slight grain"},
+      {"src": "renders/iso_high.avif", "label": "High — bright but noisy"}
+    ],
+    "metaphor_line": "Sensitivity is how big the bucket is — bigger catches more, but also more debris (noise).",
+    "next": "/quiz/1"
+  }
+}

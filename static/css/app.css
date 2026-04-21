@@ -1,0 +1,22 @@
+body {
+  background: #111;
+  color: #eee;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  min-height: 100vh;
+}
+
+.container { max-width: 960px; }
+
+.card.bg-dark { background: #1a1a1a !important; border-color: #2a2a2a; }
+.card.bg-dark img { object-fit: cover; max-height: 220px; }
+
+.lesson-body { line-height: 1.65; white-space: pre-wrap; }
+
+.technical-term.faded { opacity: 0.35; font-style: italic; }
+
+.quiz-option { padding: 0.8rem 1rem; }
+.quiz-option.correct { background: #1a3a1a; color: #8f8; border-color: #4a4; }
+.quiz-option.incorrect { background: #3a1a1a; color: #f88; border-color: #a44; }
+.quiz-option.disabled-wrong { background: #222; color: #666; border-color: #555; opacity: 0.6; }
+
+.quiz-feedback { min-height: 2.5rem; font-size: 0.95rem; }

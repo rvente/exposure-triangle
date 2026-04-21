@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Exposure Triangle — Start{% endblock %}
+{% block content %}
+<div class="text-center py-5">
+  <h1 class="display-5 mb-3">The Exposure Triangle</h1>
+  <p class="lead mb-4">An interactive lesson on how light becomes a photograph.</p>
+  <div class="row justify-content-center mb-4">
+    <div class="col-md-8">
+      <p>Three controls share one light budget: <strong>Camera Iris</strong>, <strong>Capture Duration</strong>, and <strong>Sensor Sensitivity</strong>. Three short lessons, then five quick quizzes.</p>
+    </div>
+  </div>
+  <form method="post" action="/start">
+    <button id="start-btn" class="btn btn-primary btn-lg" type="submit">Start</button>
+  </form>
+</div>
+{% endblock %}

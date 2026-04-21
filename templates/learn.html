@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Lesson {{ lesson_n }} — {{ lesson.title }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <span class="text-muted small">Lesson {{ lesson_n }} of {{ total }}</span>
+  <span class="text-muted small technical-term faded" data-technical-term>{{ lesson.technical_term }}</span>
+</div>
+
+<h1 class="mb-3">{{ lesson.title }}</h1>
+
+<div class="lesson-body mb-4" data-lesson-body>{{ lesson.body_md }}</div>
+
+<div class="row g-3 mb-4">
+  {% for img in lesson.images %}
+  <div class="col-md-4">
+    <div class="card bg-dark text-light h-100">
+      <img src="{{ url_for('static', filename=img.src) }}" alt="{{ img.label }}" class="card-img-top">
+      <div class="card-body py-2">
+        <p class="card-text small mb-0">{{ img.label }}</p>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<p class="fst-italic text-muted">{{ lesson.metaphor_line }}</p>
+
+<form method="post" class="mt-4">
+  <button id="advance-btn" class="btn btn-primary" type="submit">Advance</button>
+</form>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Result{% endblock %}
+{% block content %}
+<h1 class="mb-3">Your score</h1>
+<p class="display-6" id="score-display">{{ score.correct }} / {{ score.total }}</p>
+<p class="text-muted">First-try correct: <span id="first-try">{{ score.first_try }}</span> / {{ score.total }}</p>
+
+<h2 class="h5 mt-4">Per-question</h2>
+<ul class="list-group mb-4">
+  {% for a in score.answers %}
+  <li class="list-group-item bg-transparent text-light d-flex justify-content-between">
+    <span>Q{{ a.qid }}</span>
+    <span>
+      {% if a.correct %}<span class="badge bg-success">correct</span>{% else %}<span class="badge bg-danger">wrong</span>{% endif %}
+      <span class="badge bg-secondary">attempts: {{ a.attempts }}</span>
+      <span class="badge bg-secondary">{{ a.latency_ms }} ms</span>
+    </span>
+  </li>
+  {% endfor %}
+</ul>
+
+<form method="post" action="/api/reset" onsubmit="return resetAndGoHome(event)">
+  <button class="btn btn-secondary" type="submit">Restart</button>
+</form>
+
+<script>
+async function resetAndGoHome(e) {
+  e.preventDefault();
+  try { await fetch('/api/reset', { method: 'POST' }); } catch (_) {}
+  window.location.href = '/';
+  return false;
+}
+</script>
+{% endblock %}
