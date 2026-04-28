@@ -1,0 +1,32 @@
+/* Shell CSS for the Aperture component preview pages.
+   Pulls the tokens from colors_and_type.css and adds the card / label-plate
+   wrappers each preview file expects. Used by render_design_panels.py
+   when screenshotting components-dial.html / components-tuner.html. */
+
+@import url('./colors_and_type.css');
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--bg-0);
+  color: var(--fg-1);
+  font-family: var(--font-body);
+}
+body { padding: 64px; }
+
+.card {
+  background: var(--bg-1);
+  border: 1px solid var(--stroke-2);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-plate);
+  display: inline-block;
+}
+
+.label-plate {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+}

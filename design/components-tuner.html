@@ -1,0 +1,39 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Tuner Slider</title><link rel="stylesheet" href="_shell.css">
+<style>
+.tuner { background: var(--bg-1); border: 1px solid var(--stroke-2); border-radius: var(--radius-lg); padding: 16px 18px 14px; box-shadow: var(--shadow-plate); }
+.tuner-head { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px; }
+.tuner-read { font-family: var(--font-display); font-size: 22px; color: var(--fg-0); }
+.tuner-strip { position:relative; height:48px; background: var(--bg-0); border-radius: var(--radius-md); box-shadow: var(--shadow-well); overflow:hidden; border:1px solid var(--stroke-1);}
+.tuner-ticks { position:absolute; inset:0; display:flex; align-items:center; justify-content:space-between; padding: 0 12px; }
+.tuner-tick { width:1px; background:var(--fg-4); }
+.tuner-tick.major { background: var(--fg-3); }
+.tuner-needle { position:absolute; top:4px; bottom:4px; width:2px; background: var(--amber-400); left:62%; box-shadow: 0 0 8px var(--amber-glow); }
+.tuner-labels { display:flex; justify-content:space-between; margin-top:8px; font-family: var(--font-mono); font-size:10px; color:var(--fg-3); letter-spacing:.08em; text-transform:uppercase;}
+</style></head>
+<body><div class="card">
+  <div class="tuner">
+    <div class="tuner-head">
+      <span class="label-plate">APERTURE · f-stop</span>
+      <span class="tuner-read">f/2.8</span>
+    </div>
+    <div class="tuner-strip">
+      <div class="tuner-ticks">
+        <span class="tuner-tick major" style="height:22px;"></span>
+        <span class="tuner-tick" style="height:10px;"></span>
+        <span class="tuner-tick" style="height:10px;"></span>
+        <span class="tuner-tick major" style="height:22px;"></span>
+        <span class="tuner-tick" style="height:10px;"></span>
+        <span class="tuner-tick" style="height:10px;"></span>
+        <span class="tuner-tick major" style="height:22px;"></span>
+        <span class="tuner-tick" style="height:10px;"></span>
+        <span class="tuner-tick" style="height:10px;"></span>
+        <span class="tuner-tick major" style="height:22px;"></span>
+        <span class="tuner-tick" style="height:10px;"></span>
+        <span class="tuner-tick" style="height:10px;"></span>
+        <span class="tuner-tick major" style="height:22px;"></span>
+      </div>
+      <div class="tuner-needle"></div>
+    </div>
+    <div class="tuner-labels"><span>f/1.4</span><span>f/2.8</span><span>f/5.6</span><span>f/11</span><span>f/22</span></div>
+  </div>
+</div></body></html>

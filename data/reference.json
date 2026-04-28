@@ -1,0 +1,44 @@
+{
+  "title": "Reference Card",
+  "subtitle": "Screenshot this — a cheat sheet for the three settings.",
+  "rows": [
+    {
+      "setting": "Camera Iris",
+      "icon": "👁",
+      "scale": "Very closed ↔ Wide open",
+      "more_light": "Open wider",
+      "side_effect": "Background goes blurry (shallow depth of field)",
+      "technical": {
+        "name": "Aperture",
+        "unit": "f-stops",
+        "detail": "f/1.8 = wide open, f/22 = very closed. Lower number = wider opening (it's a fraction)."
+      }
+    },
+    {
+      "setting": "Capture Duration",
+      "icon": "⏱",
+      "scale": "Short ↔ Long",
+      "more_light": "Lengthen",
+      "side_effect": "Moving subjects streak across the frame (technical term: *motion blur*)",
+      "technical": {
+        "name": "Shutter speed",
+        "unit": "seconds",
+        "detail": "1/500s = short, 1/30s = long. Fractions of a second for most daytime shots."
+      }
+    },
+    {
+      "setting": "Sensor Sensitivity",
+      "icon": "⚡",
+      "scale": "Low ↔ High",
+      "more_light": "Raise",
+      "side_effect": "Image gets grainy (noise)",
+      "technical": {
+        "name": "ISO",
+        "unit": "unitless",
+        "detail": "ISO 100 = low, ISO 6400 = high. Doubles with each stop (100 → 200 → 400…)."
+      }
+    }
+  ],
+  "vocabulary_bridge": "Throughout the lessons we used *motion streaking* to describe the long-shutter blur of moving subjects. The technical term photographers use is *motion blur* — same idea, different label. Keeping the word \"blur\" scoped to this reference card avoids confusion with the separate blurry-background effect from a wide iris (shallow depth of field).",
+  "closing": "The best photographers don't memorize rules — they develop intuition for which tradeoff serves each moment."
+}

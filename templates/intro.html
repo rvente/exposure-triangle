@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Press the Shutter{% endblock %}
+{% block content %}
+<h1 class="mb-1">Press the Shutter</h1>
+<p class="lead text-muted mb-4">A camera, in one breath.</p>
+
+<div class="intro-body">
+  <p>You squeeze the button.</p>
+  <p>
+    The <strong>Camera Iris</strong> snaps to its chosen diameter. The shutter lifts,
+    and for exactly the length of the <strong>Capture Duration</strong>, light rains onto the sensor.
+    The sensor is a grid of millions of little buckets — each one catches photons. The curtain falls.
+  </p>
+  <p>
+    The <strong>Sensor Sensitivity</strong> you set decides how big those buckets are
+    — bigger buckets fill faster in dim light but also catch more noise; smaller ones keep
+    the image clean but need a brighter scene.
+  </p>
+  <p>
+    All of this in milliseconds. The photo is the record of that brief conversation
+    between the scene and the sensor.
+  </p>
+</div>
+
+<div class="intro-divider"></div>
+
+<div class="intro-sidebar">
+  <p class="intro-sidebar-head">Why this page is dark</p>
+  <p>
+    Lightroom, Premiere, DaVinci Resolve, the photographer's darkroom — all dark
+    for the same reason: your own iris. A dark UI lets your pupil open wider so your eyes
+    pick up subtle differences in tone. Same reason movie theaters are black.
+    <strong>Your eyes are doing photography on this page too.</strong>
+  </p>
+</div>
+
+<div class="page-nav">
+  {% if prev_url %}<a href="{{ prev_url }}" class="btn btn-outline-secondary" id="previous-btn">← Home</a>{% else %}<span class="nav-spacer"></span>{% endif %}
+  <form method="post" class="nav-form" data-static-action="intro_advance">
+    <button id="advance-btn" class="btn btn-primary" type="submit">Advance →</button>
+  </form>
+</div>
+{% endblock %}

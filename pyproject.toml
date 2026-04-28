@@ -1,10 +1,11 @@
 [project]
 name = "exposure-triangle-rv2459"
 version = "0.1.0"
-description = "HW10 main — Exposure Triangle Flask app."
+description = "HW10 main — Exposure Triangle Flask app (G1)."
 requires-python = ">=3.11"
 dependencies = [
     "flask==3.0.3",
+    "frozen-flask==1.0.2",
 ]
 
 [dependency-groups]

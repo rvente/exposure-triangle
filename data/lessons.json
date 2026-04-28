@@ -4,38 +4,139 @@
     "title": "Camera Iris",
     "technical_term": "aperture / f-stop",
     "body_md": "**Your eyes already do this.** Squinting makes distant things a little sharper — but also darker. The Camera Iris works the same way: wide open lets in more light but blurs the background; very closed keeps everything in focus but needs more light.\n\nThe side effect of a wide-open Camera Iris can be beautiful: background lights turn into soft glowing circles called *bokeh*.",
-    "images": [
-      {"src": "renders/bokeh_f1.2.avif", "label": "Wide open — shallow focus, strong bokeh"},
-      {"src": "renders/bokeh_f5.6.avif", "label": "Moderate — balanced"},
-      {"src": "renders/bokeh_f22.0.avif", "label": "Very closed — deep focus"}
-    ],
+    "slider": {
+      "kind": "snap",
+      "default_index": 4,
+      "ends_left": "wide open",
+      "ends_right": "very closed",
+      "frames": [
+        {"src": "renders/bokeh_f1.2.avif", "label": "Wide open — shallow depth of field, strong bokeh"},
+        {"src": "renders/bokeh_f1.8.avif", "label": "Wide open — noticeable bokeh"},
+        {"src": "renders/bokeh_f2.8.avif", "label": "Moderately open"},
+        {"src": "renders/bokeh_f4.0.avif", "label": "Moderate"},
+        {"src": "renders/bokeh_f5.6.avif", "label": "Moderately closed"},
+        {"src": "renders/bokeh_f8.0.avif", "label": "Closed — more in focus"},
+        {"src": "renders/bokeh_f11.0.avif", "label": "More closed"},
+        {"src": "renders/bokeh_f22.0.avif", "label": "Very closed — deep depth of field"},
+        {"src": "renders/bokeh_f32.0.avif", "label": "Very closed — maximum sharpness"}
+      ]
+    },
     "metaphor_line": "The sensor is a bucket — the Camera Iris is how wide the mouth opens.",
+    "scene_caption": "The scene is a Blender render: Suzanne — a classic 3D test mesh — surrounded by orbiting cubes that emit soft glowing light. Opening the iris wider turns those cube lights into the round blur called *bokeh*.",
     "next": "/learn/2"
   },
   "2": {
     "id": "duration",
     "title": "Capture Duration",
     "technical_term": "shutter speed",
-    "body_md": "The Camera Iris controls how *wide* the light stream is. The **Capture Duration** controls how *long* the sensor collects light.\n\nSports photographers use a short Capture Duration to freeze action. Night photographers use a long one to gather light trails.\n\nA long Capture Duration makes moving subjects **streak** across the frame — we call this *motion streaking* in this lesson.",
-    "images": [
-      {"src": "renders/motion_s0.0.avif", "label": "Short — motion frozen"},
-      {"src": "renders/motion_s1.2.avif", "label": "Medium — some streaking"},
-      {"src": "renders/motion_s3.5.avif", "label": "Long — heavy motion streaking"}
-    ],
-    "metaphor_line": "The Capture Duration is how long the bucket sits in the rain.",
+    "subtitle": "But what if it's still too bright — or too dark?",
+    "body_pre": "The Camera Iris controls how *wide* the light stream is. The **Capture Duration** controls how *long* the sensor collects light.",
+    "showcase": {
+      "images": [
+        {"src": "renders/motion_s0.0.avif", "label": "Short — motion frozen"},
+        {"src": "renders/motion_s1.2.avif", "label": "Medium"},
+        {"src": "renders/motion_s3.5.avif", "label": "Long — motion streaking"}
+      ]
+    },
+    "body_post": "Sports photographers use a short Capture Duration to freeze action. Night photographers use a long one to gather light trails.\n\nA long Capture Duration makes moving subjects **streak** across the frame — we call this *motion streaking* in this lesson.",
     "next": "/learn/3"
   },
   "3": {
+    "id": "duration_interactive",
+    "title": "Capture Duration — try it",
+    "technical_term": "shutter speed",
+    "subtitle": "Drag the slider to see how the Capture Duration affects motion.",
+    "slider": {
+      "kind": "snap",
+      "default_index": 0,
+      "ends_left": "short",
+      "ends_right": "long",
+      "frames": [
+        {"src": "renders/motion_s0.0.avif", "label": "Very short — motion completely frozen"},
+        {"src": "renders/motion_s0.25.avif", "label": "Short — motion frozen"},
+        {"src": "renders/motion_s0.5.avif", "label": "Short-medium — slight streaking"},
+        {"src": "renders/motion_s0.8.avif", "label": "Medium-short"},
+        {"src": "renders/motion_s1.2.avif", "label": "Medium Capture Duration"},
+        {"src": "renders/motion_s1.8.avif", "label": "Medium-long — visible motion streaking"},
+        {"src": "renders/motion_s2.5.avif", "label": "Long — strong motion streaking"},
+        {"src": "renders/motion_s3.5.avif", "label": "Very long — heavy motion streaking"}
+      ]
+    },
+    "metaphor_line": "The Capture Duration is how long the bucket sits in the rain.",
+    "next": "/learn/4"
+  },
+  "4": {
     "id": "sensitivity",
     "title": "Sensor Sensitivity",
     "technical_term": "ISO",
-    "body_md": "You've opened the Camera Iris wide. The Capture Duration is as long as you can hold steady. It's still too dark.\n\nThe last option: make the sensor **more sensitive to light**. It amplifies the signal — but also amplifies noise.\n\nSensitivity is the last resort: a noisy photo is better than a completely dark one. You can always reduce noise in editing — you can't add light that wasn't captured.",
-    "images": [
-      {"src": "renders/iso_low.avif", "label": "Low — clean, needs lots of light"},
-      {"src": "renders/iso_med.avif", "label": "Medium — slight grain"},
-      {"src": "renders/iso_high.avif", "label": "High — bright but noisy"}
-    ],
+    "subtitle": "You've opened the Camera Iris wide. The Capture Duration is as long as you can hold steady. It's still too dark.",
+    "body_pre": "You've run out of light. The last option: make the sensor **more sensitive to light**. It amplifies the signal — but also amplifies noise.",
+    "showcase": {
+      "images": [
+        {"src": "renders/iso_low.avif", "label": "Low sensitivity — clean image"},
+        {"src": "renders/iso_high.avif", "label": "High sensitivity — noisy/grainy"}
+      ]
+    },
+    "body_post": "Sensitivity is the last resort: a noisy photo is better than a completely dark one. You can always reduce noise in editing — you can't add light that wasn't captured.",
+    "next": "/learn/5"
+  },
+  "5": {
+    "id": "sensitivity_toggle",
+    "title": "Sensor Sensitivity — try it",
+    "technical_term": "ISO",
+    "subtitle": "Toggle between low, medium, and high to see the noise tradeoff.",
+    "toggle": {
+      "default_index": 0,
+      "frames": [
+        {"src": "renders/iso_low.avif", "label": "Low sensitivity — clean, needs lots of light", "button": "Low"},
+        {"src": "renders/iso_med.avif", "label": "Medium sensitivity — slight grain", "button": "Medium"},
+        {"src": "renders/iso_high.avif", "label": "High sensitivity — bright but noisy", "button": "High"}
+      ]
+    },
     "metaphor_line": "Sensitivity is how big the bucket is — bigger catches more, but also more debris (noise).",
+    "next": "/learn/6"
+  },
+  "6": {
+    "id": "sensitivity_compare",
+    "title": "Sensor Sensitivity — A / B compare",
+    "technical_term": "ISO",
+    "subtitle": "Drag the divider to slide between low and high sensitivity. Low is clean but needs light; high fills in dark scenes at the cost of grain.",
+    "comparison": {
+      "base": "renders/iso_low.avif",
+      "overlay": "renders/iso_high.avif",
+      "label_base": "Low sensitivity",
+      "label_overlay": "High sensitivity",
+      "caption": ""
+    },
+    "next": "/learn/7"
+  },
+  "7": {
+    "id": "triangle",
+    "kind": "summary",
+    "title": "The Exposure Triangle",
+    "subtitle": "How the three settings share one light budget",
+    "buckets": [
+      {
+        "icon": "👁",
+        "name": "Camera Iris",
+        "effect": "Wider = more light",
+        "side_effect": "Side effect: shallow focus"
+      },
+      {
+        "icon": "⏲",
+        "name": "Capture Duration",
+        "effect": "Longer = more light",
+        "side_effect": "Side effect: motion streaking"
+      },
+      {
+        "icon": "⚡",
+        "name": "Sensor Sensitivity",
+        "effect": "Higher = brighter",
+        "side_effect": "Side effect: noise/grain"
+      }
+    ],
+    "body": "Every change is a tradeoff. Brightening with one setting lets you darken with another — and each has a side effect.",
+    "insight": "The art of photography is choosing which tradeoff serves your image best.",
     "next": "/quiz/1"
   }
 }

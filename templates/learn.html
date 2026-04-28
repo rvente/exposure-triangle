@@ -1,15 +1,81 @@
 {% extends "base.html" %}
 {% block title %}Lesson {{ lesson_n }} — {{ lesson.title }}{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <span class="text-muted small">Lesson {{ lesson_n }} of {{ total }}</span>
+{% if lesson.technical_term %}
+<div class="d-flex justify-content-end align-items-center mb-1">
   <span class="text-muted small technical-term faded" data-technical-term>{{ lesson.technical_term }}</span>
 </div>
+{% endif %}
 
-<h1 class="mb-3">{{ lesson.title }}</h1>
+<h1 class="mb-3{% if lesson.kind == 'summary' %} text-center{% endif %}">{{ lesson.title }}</h1>
 
-<div class="lesson-body mb-4" data-lesson-body>{{ lesson.body_md }}</div>
+{% if lesson.kind == "summary" %}
+{% if lesson.subtitle %}<p class="lead text-muted mb-4 text-center">{{ lesson.subtitle }}</p>{% endif %}
+<div class="bucket-row">
+  {% for bucket in lesson.buckets %}
+  <div class="bucket-item">
+    <div class="bucket-icon">{{ bucket.icon }}</div>
+    <div class="bucket-label">
+      <strong>{{ bucket.name }}</strong><br>
+      {{ bucket.effect }}<br>
+      <em>{{ bucket.side_effect }}</em>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+<p class="summary-body mt-4">{{ lesson.body }}</p>
+<p class="summary-insight mt-3">{{ lesson.insight }}</p>
+{% else %}
 
+{% if lesson.subtitle %}<p class="lead text-muted mb-3">{{ lesson.subtitle | markdown_inline }}</p>{% endif %}
+
+{% if lesson.body_md %}<div class="lesson-body mb-4" data-lesson-body>{{ lesson.body_md | markdown_inline }}</div>{% endif %}
+
+{% if lesson.body_pre %}<div class="lesson-body mb-3" data-lesson-body-pre>{{ lesson.body_pre | markdown_inline }}</div>{% endif %}
+
+{% if lesson.showcase %}
+<div class="showcase-row">
+  {% for img in lesson.showcase.images %}
+  <div class="showcase-card">
+    <img src="{{ url_for('static', filename=img.src) }}" alt="{{ img.label }}">
+    <div class="showcase-label">{{ img.label }}</div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if lesson.body_post %}<div class="lesson-body mb-4" data-lesson-body-post>{{ lesson.body_post | markdown_inline }}</div>{% endif %}
+
+{% if lesson.slider %}
+<div class="slider-viewer mb-2" id="slider-viewer"
+     data-default-index="{{ lesson.slider.default_index }}"
+     data-frames='{{ lesson.slider.frames | tojson }}'>
+  <img class="slider-image" id="slider-image"
+       src="{{ url_for('static', filename=lesson.slider.frames[lesson.slider.default_index].src) }}"
+       alt="{{ lesson.slider.frames[lesson.slider.default_index].label }}">
+</div>
+<p class="slider-label text-center" id="slider-label">{{ lesson.slider.frames[lesson.slider.default_index].label }}</p>
+<div class="slider-row d-flex align-items-center justify-content-center gap-3 mb-3">
+  <span class="text-muted small">{{ lesson.slider.ends_left }}</span>
+  <input type="range" id="slider-input"
+         min="0" max="{{ lesson.slider.frames|length - 1 }}" value="{{ lesson.slider.default_index }}">
+  <span class="text-muted small">{{ lesson.slider.ends_right }}</span>
+</div>
+{% elif lesson.toggle %}
+<div class="toggle-viewer mb-2" id="toggle-viewer"
+     data-default-index="{{ lesson.toggle.default_index }}"
+     data-frames='{{ lesson.toggle.frames | tojson }}'>
+  <img class="toggle-image" id="toggle-image"
+       src="{{ url_for('static', filename=lesson.toggle.frames[lesson.toggle.default_index].src) }}"
+       alt="{{ lesson.toggle.frames[lesson.toggle.default_index].label }}">
+</div>
+<p class="toggle-label text-center" id="toggle-label">{{ lesson.toggle.frames[lesson.toggle.default_index].label }}</p>
+<div class="toggle-group btn-group d-flex justify-content-center mb-3" id="toggle-group">
+  {% for frame in lesson.toggle.frames %}
+  <button type="button" class="btn btn-outline-primary toggle-btn{% if loop.index0 == lesson.toggle.default_index %} active{% endif %}" data-index="{{ loop.index0 }}">{{ frame.button }}</button>
+  {% endfor %}
+</div>
+{% else %}
 <div class="row g-3 mb-4">
   {% for img in lesson.images %}
   <div class="col-md-4">
@@ -22,10 +88,34 @@
   </div>
   {% endfor %}
 </div>
+{% endif %}
 
 <p class="fst-italic text-muted">{{ lesson.metaphor_line }}</p>
 
-<form method="post" class="mt-4">
-  <button id="advance-btn" class="btn btn-primary" type="submit">Advance</button>
-</form>
+{% if lesson.scene_caption %}
+<p class="text-muted small scene-caption">{{ lesson.scene_caption | markdown_inline }}</p>
+{% endif %}
+
+{% if lesson.comparison %}
+<div class="compare-viewer mt-4" id="compare-viewer"
+     data-base="{{ url_for('static', filename=lesson.comparison.base) }}"
+     data-overlay="{{ url_for('static', filename=lesson.comparison.overlay) }}"
+     data-initial-pct="{{ compare_initial_pct if compare_initial_pct is defined else 50 }}">
+  <img class="compare-base" src="{{ url_for('static', filename=lesson.comparison.base) }}" alt="{{ lesson.comparison.label_base }}">
+  <img class="compare-overlay" src="{{ url_for('static', filename=lesson.comparison.overlay) }}" alt="{{ lesson.comparison.label_overlay }}">
+  <div class="compare-handle"></div>
+  <div class="compare-label compare-label-left">{{ lesson.comparison.label_base }}</div>
+  <div class="compare-label compare-label-right">{{ lesson.comparison.label_overlay }}</div>
+</div>
+<p class="text-muted small mt-2">{{ lesson.comparison.caption }}</p>
+{% endif %}
+{% endif %}
+
+<div class="page-nav">
+  {% if prev_url %}<a href="{{ prev_url }}" class="btn btn-outline-secondary" id="previous-btn">← Previous</a>{% else %}<span class="nav-spacer"></span>{% endif %}
+  <form method="post" class="nav-form" data-static-action="learn_advance">
+    <button id="advance-btn" class="btn btn-primary" type="submit">Advance →</button>
+  </form>
+</div>
 {% endblock %}
+

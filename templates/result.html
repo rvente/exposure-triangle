@@ -1,33 +1,91 @@
 {% extends "base.html" %}
 {% block title %}Result{% endblock %}
 {% block content %}
+{# Defaults for render paths (atlas pipeline, frozen-flask) that don't
+   thread the new bonus-context vars. The app.py result route passes
+   these explicitly. #}
+{% set bonus_reached = bonus_reached|default(false) %}
+{% set first_try_in_window = first_try_in_window|default(0) %}
+{% set bonus_gate_window = bonus_gate_window|default(5) %}
+{% set bonus_gate_threshold = bonus_gate_threshold|default(4) %}
+{% set bonus_quiz_count = bonus_quiz_count|default(2) %}
+{% set bonus_qids = bonus_qids|default(()) %}
+{% set per_q = per_q|default([]) %}
+{% set quizzes_json = quizzes_json|default({}) %}
+<script>
+  // Static-mode payload: quizzes content + bonus qids for renderStaticResult
+  // to look up prompts / option text / rationale per-answer client-side.
+  window.QUIZZES = {{ quizzes_json|tojson|safe }};
+  window.BONUS_QIDS = {{ bonus_qids|tojson|safe }};
+</script>
 <h1 class="mb-3">Your score</h1>
 <p class="display-6" id="score-display">{{ score.correct }} / {{ score.total }}</p>
 <p class="text-muted">First-try correct: <span id="first-try">{{ score.first_try }}</span> / {{ score.total }}</p>
 
-<h2 class="h5 mt-4">Per-question</h2>
-<ul class="list-group mb-4">
-  {% for a in score.answers %}
-  <li class="list-group-item bg-transparent text-light d-flex justify-content-between">
-    <span>Q{{ a.qid }}</span>
-    <span>
-      {% if a.correct %}<span class="badge bg-success">correct</span>{% else %}<span class="badge bg-danger">wrong</span>{% endif %}
-      <span class="badge bg-secondary">attempts: {{ a.attempts }}</span>
-      <span class="badge bg-secondary">{{ a.latency_ms }} ms</span>
-    </span>
+{# Bonus celebration: surfaces WHY the last two questions happened.
+   Only shown when the learner actually reached bonus (i.e. at least
+   one bonus answer in state). In static mode the server-side
+   `bonus_reached` defaults to False; `renderStaticResult` in app.js
+   injects the banner client-side after reading LocalBackend state. #}
+{% if bonus_reached %}
+<div class="alert alert-warning bg-transparent text-warning border-warning mb-4" id="bonus-celebration" role="status">
+  <strong>★ Bonus round unlocked.</strong>
+  You nailed {{ first_try_in_window }} of {{ bonus_gate_window }} on first try through the burn-in and first two activate quizzes — the threshold was {{ bonus_gate_threshold }}. Bonus questions earned you the last {{ bonus_quiz_count }} slot{{ 's' if bonus_quiz_count != 1 else '' }} on your score line.
+</div>
+{% endif %}
+
+<h2 class="h5 mt-4">Per-question review</h2>
+<ul class="list-group mb-4" id="per-question-list">
+  {% for a in per_q %}
+  <li class="list-group-item bg-transparent text-light">
+    <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-2">
+      <span>
+        <strong>Q{{ a.qid }}</strong>{% if a.qid in bonus_qids %} <span class="badge bg-warning text-dark">★</span>{% endif %}
+        {% if a.category %}<span class="text-muted ms-2 small">{{ a.category }}</span>{% endif %}
+      </span>
+      <span class="d-flex gap-1 flex-wrap">
+        {% if a.is_correct %}<span class="badge bg-success">correct</span>{% else %}<span class="badge bg-danger">wrong</span>{% endif %}
+        <span class="badge bg-secondary">attempts: {{ a.attempts }}</span>
+        <span class="badge bg-secondary">{{ a.latency_ms }} ms</span>
+      </span>
+    </div>
+    {% if a.prompt %}<div class="mb-2 fst-italic">{{ a.prompt }}</div>{% endif %}
+    <div class="mb-1">
+      <strong>Your answer:</strong>
+      {% if a.is_correct %}
+        <span class="text-success">{{ a.chosen_text }} ✓</span>
+      {% else %}
+        <span class="text-danger">{{ a.chosen_text }} ✗</span>
+      {% endif %}
+    </div>
+    {% if not a.is_correct and a.correct_text %}
+    <div class="mb-1">
+      <strong>Correct answer:</strong>
+      <span class="text-success">{{ a.correct_text }}</span>
+    </div>
+    {% endif %}
+    {% if a.why %}
+    <div class="mt-2 text-muted small"><strong>Why:</strong> {{ a.why }}</div>
+    {% endif %}
   </li>
   {% endfor %}
 </ul>
 
-<form method="post" action="/api/reset" onsubmit="return resetAndGoHome(event)">
-  <button class="btn btn-secondary" type="submit">Restart</button>
-</form>
+<div class="page-nav">
+  {% if prev_url %}<a href="{{ prev_url }}" class="btn btn-outline-secondary" id="previous-btn">← Previous</a>{% else %}<span class="nav-spacer"></span>{% endif %}
+  <form method="post" action="/api/reset" class="nav-form d-flex gap-2" data-static-action="reset" onsubmit="return resetAndGoHome(event)">
+    <button class="btn btn-outline-secondary" type="submit">Restart</button>
+    <a class="btn btn-primary" href="/reference">Reference card →</a>
+  </form>
+</div>
 
 <script>
 async function resetAndGoHome(e) {
   e.preventDefault();
-  try { await fetch('/api/reset', { method: 'POST' }); } catch (_) {}
-  window.location.href = '/';
+  try {
+    if (window.backend && window.backend.reset) await window.backend.reset();
+  } catch (_) {}
+  window.location.href = window.IS_STATIC ? './' : '/';
   return false;
 }
 </script>

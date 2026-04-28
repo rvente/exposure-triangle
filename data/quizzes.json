@@ -69,23 +69,447 @@
       "hint_on_wrong": "Check each quality separately: depth of field, motion, noise. Then match them to settings.",
       "reveal_on_wrong": "Blurry background = wide-open Iris. No motion streaking = short Capture Duration. No grain = low Sensitivity."
     },
-    "variants": {}
+    "variants": {
+      "low": {
+        "prompt": "Which Camera Iris setting produced this photo?",
+        "options": [
+          {"id": "a", "text": "Wide open Camera Iris"},
+          {"id": "b", "text": "Very closed Camera Iris"}
+        ],
+        "correct": "a",
+        "hint_on_wrong": "Remember from the Camera Iris lesson: a wide-open Iris = shallow focus = soft bokeh. A closed Iris keeps everything sharp. The blurry background here is the tell.",
+        "reveal_on_wrong": "Wide open. The bokeh circles only appear with a wide Iris. Feel free to step back one chapter (← Previous) to re-check the Camera Iris lesson."
+      },
+      "medium": {
+        "prompt": "Which settings produced this?",
+        "options": [
+          {"id": "a", "text": "Wide open Camera Iris, short Capture Duration, low Sensor Sensitivity"},
+          {"id": "b", "text": "Very closed Camera Iris, long Capture Duration, high Sensor Sensitivity"},
+          {"id": "c", "text": "Moderate Camera Iris, medium Capture Duration, medium Sensor Sensitivity"}
+        ],
+        "correct": "a",
+        "hint_on_wrong": "Check each quality separately: depth of field, motion, noise. Then match them to settings.",
+        "reveal_on_wrong": "Blurry background = wide-open Iris. No motion streaking = short Capture Duration. No grain = low Sensitivity."
+      },
+      "high": {
+        "prompt": "Best-matched exposure for this photo — handheld, well-lit scene, clean rendering?",
+        "options": [
+          {"id": "a", "text": "f/1.8, 1/1000 s, ISO 100"},
+          {"id": "b", "text": "f/1.8, 1/30 s, ISO 100"},
+          {"id": "c", "text": "f/16, 1/1000 s, ISO 6400"},
+          {"id": "d", "text": "f/8, 1/500 s, ISO 800"}
+        ],
+        "correct": "a",
+        "hint_on_wrong": "Each option pins three values — one of them disagrees with what the photo shows. Depth of field, motion, grain.",
+        "reveal_on_wrong": "f/1.8 matches the shallow depth / bokeh. 1/1000 s is short enough that no motion streaks. ISO 100 means no grain. Option (b) has shutter too slow for a handheld sharp shot; (c) and (d) can't produce the shallow DoF."
+      }
+    }
   },
   "5": {
     "category": "duration",
-    "image": "renders/paul-pastourmatzis-mwWJul4WkqU-unsplash.avif",
-    "image_alt": "Night sky star trails (reference photo, shown alongside option B)",
+    "kind": "image_choice",
     "setup": "Both of these night sky photos were taken with a tripod. Which one used the longer Capture Duration?",
     "burn_in": {
       "prompt": "Which one used the longer Capture Duration?",
       "options": [
-        {"id": "a", "text": "A — stars are sharp points (Milky Way)"},
-        {"id": "b", "text": "B — stars are smeared into arcs (star trails)"}
+        {
+          "id": "a",
+          "text": "Stars are sharp points",
+          "image": "renders/cosmic-timetraveler-LhDWW8PhPoE-unsplash.avif",
+          "image_alt": "Milky Way",
+          "credit": "Photo: Cosmic Timetraveler / Unsplash"
+        },
+        {
+          "id": "b",
+          "text": "Stars are smeared into arcs",
+          "image": "renders/paul-pastourmatzis-mwWJul4WkqU-unsplash.avif",
+          "image_alt": "Star trails",
+          "credit": "Photo: Paul Pastourmatzis / Unsplash"
+        }
       ],
       "correct": "b",
-      "hint_on_wrong": "Which photo shows stars drawn as long lines?",
-      "reveal_on_wrong": "Star trails are individual stars smeared by Earth's rotation during a very long Capture Duration."
+      "feedback_on_correct": "Correct! The star trails photo was taken with a much longer Capture Duration — long enough that Earth's rotation smeared each star into an arc. The Milky Way shot needs maybe 20\u201330 seconds (stars still look like points). The star trails shot needs 30 minutes to several hours. Both require a tripod.",
+      "hint_on_wrong": "Take another look — which photo shows stars drawn as long lines?",
+      "reveal_on_wrong": "The star trails are the giveaway — those streaks are individual stars smeared across the sky by Earth's rotation during a very long capture."
     },
-    "variants": {}
+    "variants": {
+      "low": {
+        "prompt": "Which photo was taken with the camera's shutter left open longer?",
+        "options": [
+          {
+            "id": "a",
+            "text": "Stars look like sharp points",
+            "image": "renders/cosmic-timetraveler-LhDWW8PhPoE-unsplash.avif",
+            "image_alt": "Milky Way",
+            "credit": "Photo: Cosmic Timetraveler / Unsplash"
+          },
+          {
+            "id": "b",
+            "text": "Stars look like curved lines",
+            "image": "renders/paul-pastourmatzis-mwWJul4WkqU-unsplash.avif",
+            "image_alt": "Star trails",
+            "credit": "Photo: Paul Pastourmatzis / Unsplash"
+          }
+        ],
+        "correct": "b",
+        "feedback_on_correct": "Correct! A longer open shutter means more of Earth's rotation gets recorded — each point of starlight drags into a line.",
+        "hint_on_wrong": "Remember from the Capture Duration lesson: a longer open shutter records more movement. Earth rotates the whole time, so stars drag into streaks instead of staying as dots.",
+        "reveal_on_wrong": "The curved-lines photo. Those streaks are individual stars, smeared by Earth's rotation during a long capture. ← Previous will take you back to the Capture Duration chapter if you want a refresher."
+      },
+      "medium": {
+        "prompt": "Which one used the longer Capture Duration?",
+        "options": [
+          {
+            "id": "a",
+            "text": "Stars are sharp points",
+            "image": "renders/cosmic-timetraveler-LhDWW8PhPoE-unsplash.avif",
+            "image_alt": "Milky Way",
+            "credit": "Photo: Cosmic Timetraveler / Unsplash"
+          },
+          {
+            "id": "b",
+            "text": "Stars are smeared into arcs",
+            "image": "renders/paul-pastourmatzis-mwWJul4WkqU-unsplash.avif",
+            "image_alt": "Star trails",
+            "credit": "Photo: Paul Pastourmatzis / Unsplash"
+          }
+        ],
+        "correct": "b",
+        "feedback_on_correct": "Correct! The star trails photo was taken with a much longer Capture Duration — long enough that Earth's rotation smeared each star into an arc. The Milky Way shot needs maybe 20\u201330 seconds (stars still look like points). The star trails shot needs 30 minutes to several hours. Both require a tripod.",
+        "hint_on_wrong": "Take another look — which photo shows stars drawn as long lines?",
+        "reveal_on_wrong": "The star trails are the giveaway — those streaks are individual stars smeared across the sky by Earth's rotation during a very long capture."
+      },
+      "high": {
+        "prompt": "Which shutter speed most likely produced the image showing curved star-trails?",
+        "options": [
+          {
+            "id": "a",
+            "text": "1/250 s — handheld daylight range",
+            "image": "renders/paul-pastourmatzis-mwWJul4WkqU-unsplash.avif",
+            "image_alt": "Star trails"
+          },
+          {
+            "id": "b",
+            "text": "30 min bulb exposure — star-trail range",
+            "image": "renders/paul-pastourmatzis-mwWJul4WkqU-unsplash.avif",
+            "image_alt": "Star trails"
+          },
+          {
+            "id": "c",
+            "text": "20 s — astro cap below rotation smear",
+            "image": "renders/paul-pastourmatzis-mwWJul4WkqU-unsplash.avif",
+            "image_alt": "Star trails"
+          }
+        ],
+        "correct": "b",
+        "feedback_on_correct": "Correct! Star-trail arcs that long imply a multi-minute exposure; 20 s keeps stars sharp (the 500-rule threshold), 1/250 s is handheld daylight.",
+        "hint_on_wrong": "The 500-rule: f/L ≈ 500/focal-length is the limit before rotation smear appears on a wide-angle. The trails here are way past that.",
+        "reveal_on_wrong": "30 min bulb. 20 s sits below the smear threshold (points, not lines). 1/250 s is a daylight handheld speed and won't even register starlight."
+      }
+    }
+  },
+  "6": {
+    "category": "duration",
+    "image": "renders/motion_s0.8.avif",
+    "image_alt": "Bird in flight with wings showing slight streak",
+    "setup": "You want a photo of a bird in flight. The wings should still be visible as wings — not frozen mid-air like a sculpture, but not blurred into an abstract smudge either.",
+    "burn_in": {
+      "prompt": "Which Capture Duration fits the brief?",
+      "options": [
+        {"id": "a", "text": "Very short (freezes wings completely)"},
+        {"id": "b", "text": "Moderate (wings streak slightly but stay readable)"},
+        {"id": "c", "text": "Long (wings disappear into the background)"}
+      ],
+      "correct": "b",
+      "hint_on_wrong": "Very short and long both fail the brief in different ways. Think about what a wing should look like — some motion streak reads as motion, but too much erases the wing.",
+      "reveal_on_wrong": "Moderate. Very short freezes the wings so the photo looks like a statue; long blurs them out of the frame entirely."
+    },
+    "variants": {
+      "low": {
+        "prompt": "How long should the shutter stay open?",
+        "options": [
+          {"id": "a", "text": "As short as possible — freeze every detail"},
+          {"id": "b", "text": "A bit longer — let the wings streak a little"}
+        ],
+        "correct": "b",
+        "hint_on_wrong": "Remember from the Capture Duration lesson: a tiny bit of streak reads as motion. Zero streak reads as a frozen statue.",
+        "reveal_on_wrong": "A bit longer. Wings need some streak to say \"flying\". ← Previous will take you back to the Capture Duration chapter."
+      },
+      "medium": {
+        "prompt": "Which Capture Duration fits the brief?",
+        "options": [
+          {"id": "a", "text": "Very short (freezes wings completely)"},
+          {"id": "b", "text": "Moderate (wings streak slightly but stay readable)"},
+          {"id": "c", "text": "Long (wings disappear into the background)"}
+        ],
+        "correct": "b",
+        "hint_on_wrong": "Very short and long both fail the brief in different ways. Think about what a wing should look like — some motion streak reads as motion, but too much erases the wing.",
+        "reveal_on_wrong": "Moderate. Very short freezes the wings so the photo looks like a statue; long blurs them out of the frame entirely."
+      },
+      "high": {
+        "prompt": "Best shutter speed for a readable wings-streaking shot of a passerine bird at 15 m?",
+        "options": [
+          {"id": "a", "text": "1/4000 s — wings pin-sharp, motionless"},
+          {"id": "b", "text": "1/500 s — wings streak slightly, body sharp"},
+          {"id": "c", "text": "1/60 s — body ghosts, wings erased"},
+          {"id": "d", "text": "1 s — entire bird dissolves"}
+        ],
+        "correct": "b",
+        "hint_on_wrong": "A sparrow's wingbeat is ~15 Hz. Freezing it fully or letting it sweep through a full cycle both miss the brief.",
+        "reveal_on_wrong": "1/500 s. At ~15 Hz, a full wingbeat is ~67 ms — 1/500 s (= 2 ms) captures a small slice, enough streak to read as flight without erasing the wing. 1/4000 s looks taxidermic; 1/60 s and 1 s dissolve the subject."
+      }
+    }
+  },
+  "7": {
+    "category": "sensitivity",
+    "image": "renders/iso_high.avif",
+    "image_alt": "Indoor handheld photo showing visible grain",
+    "setup": "You're shooting a wedding reception indoors, handheld, and the light is dim. Your Camera Iris is already as wide as it goes, and you can't lengthen the Capture Duration without blur from your hands shaking.",
+    "burn_in": {
+      "prompt": "What's the tradeoff when you raise Sensor Sensitivity to brighten the image?",
+      "options": [
+        {"id": "a", "text": "Nothing — Sensor Sensitivity is free to raise"},
+        {"id": "b", "text": "Depth of field becomes shallower"},
+        {"id": "c", "text": "Visible grain / noise increases"}
+      ],
+      "correct": "c",
+      "hint_on_wrong": "Each control has one price. Look at the Sensor Sensitivity lesson image — what's the give-back?",
+      "reveal_on_wrong": "Grain. Depth of field is controlled by the Iris, not by sensitivity. Higher sensitivity = more light captured per unit of real light = more visible noise."
+    },
+    "variants": {
+      "low": {
+        "prompt": "What does turning up Sensor Sensitivity cost you?",
+        "options": [
+          {"id": "a", "text": "Nothing — it's a free brightness boost"},
+          {"id": "b", "text": "Shallower depth of field"},
+          {"id": "c", "text": "More visible grain / noise"}
+        ],
+        "correct": "c",
+        "hint_on_wrong": "Remember from the Sensor Sensitivity lesson: every exposure knob has a price. Sensitivity trades light for grain.",
+        "reveal_on_wrong": "More grain. Shallower depth of field comes from opening the Iris, not from raising sensitivity. ← Previous will take you back to the Sensor Sensitivity chapter."
+      },
+      "medium": {
+        "prompt": "What's the tradeoff when you raise Sensor Sensitivity to brighten the image?",
+        "options": [
+          {"id": "a", "text": "Nothing — Sensor Sensitivity is free to raise"},
+          {"id": "b", "text": "Depth of field becomes shallower"},
+          {"id": "c", "text": "Visible grain / noise increases"}
+        ],
+        "correct": "c",
+        "hint_on_wrong": "Each control has one price. Look at the Sensor Sensitivity lesson image — what's the give-back?",
+        "reveal_on_wrong": "Grain. Depth of field is controlled by the Iris, not by sensitivity. Higher sensitivity = more light captured per unit of real light = more visible noise."
+      },
+      "high": {
+        "prompt": "Handheld indoors, f/1.8 wide open, 1/60 s (your slowest steady speed). Meter reads −2 EV. You bump ISO from 400 to 1600. What changes and at what cost?",
+        "options": [
+          {"id": "a", "text": "+1 EV brighter, narrower depth of field"},
+          {"id": "b", "text": "+1 EV brighter, faster apparent motion"},
+          {"id": "c", "text": "+2 EV brighter, more shadow noise + lower dynamic range"},
+          {"id": "d", "text": "+4 EV brighter, no tradeoff"}
+        ],
+        "correct": "c",
+        "hint_on_wrong": "ISO stops: each doubling = +1 EV. 400 → 1600 is two stops. The noise floor rises with each doubling, and highlight headroom drops.",
+        "reveal_on_wrong": "+2 EV. Dynamic range compresses too — the sensor's floor gets closer to its ceiling at high ISO, which is why shadow-push edits look grainy on high-ISO frames."
+      }
+    }
+  },
+  "8": {
+    "category": "combo",
+    "image": "renders/bokeh_f2.8.avif",
+    "image_alt": "Low-light handheld portrait with shallow depth of field",
+    "setup": "You want a portrait: sharp face, blurred background. You're handheld (so Capture Duration can't be long) and the room is dim. Iris is already wide open and Capture Duration is as slow as you can hold steady. The image is still too dark.",
+    "burn_in": {
+      "prompt": "Which control do you raise to reach a correct exposure?",
+      "options": [
+        {"id": "a", "text": "Raise Sensor Sensitivity"},
+        {"id": "b", "text": "Close the Iris further (smaller opening)"},
+        {"id": "c", "text": "Lengthen Capture Duration further"}
+      ],
+      "correct": "a",
+      "hint_on_wrong": "Re-read the setup — the other two controls are at their limits for this shot. Closing the Iris would break the shallow-DoF brief.",
+      "reveal_on_wrong": "Sensor Sensitivity is the only lever left. You'll trade some grain for a bright-enough frame; the alternatives break either the motion or the depth-of-field constraint."
+    },
+    "variants": {
+      "low": {
+        "prompt": "Two controls are already maxed. Which one is left?",
+        "options": [
+          {"id": "a", "text": "Raise Sensor Sensitivity"},
+          {"id": "b", "text": "Close the Iris further"}
+        ],
+        "correct": "a",
+        "hint_on_wrong": "Remember: the setup says the Iris is already wide open. Closing it wouldn't brighten the image.",
+        "reveal_on_wrong": "Raise Sensor Sensitivity. It's the only free lever. ← Previous will take you back to the Sensor Sensitivity chapter."
+      },
+      "medium": {
+        "prompt": "Which control do you raise to reach a correct exposure?",
+        "options": [
+          {"id": "a", "text": "Raise Sensor Sensitivity"},
+          {"id": "b", "text": "Close the Iris further (smaller opening)"},
+          {"id": "c", "text": "Lengthen Capture Duration further"}
+        ],
+        "correct": "a",
+        "hint_on_wrong": "Re-read the setup — the other two controls are at their limits for this shot. Closing the Iris would break the shallow-DoF brief.",
+        "reveal_on_wrong": "Sensor Sensitivity is the only lever left. You'll trade some grain for a bright-enough frame; the alternatives break either the motion or the depth-of-field constraint."
+      },
+      "high": {
+        "prompt": "Handheld dim-room portrait: f/1.8, 1/60 s, ISO 800 — still −1 EV underexposed. Brief: sharp face, shallow DoF, no motion blur. What do you do?",
+        "options": [
+          {"id": "a", "text": "ISO 1600 (+1 EV; accept slight noise)"},
+          {"id": "b", "text": "f/2.8 (+0 EV; deeper DoF)"},
+          {"id": "c", "text": "1/30 s (+1 EV; risk motion blur)"},
+          {"id": "d", "text": "Do nothing — underexpose and push in post"}
+        ],
+        "correct": "a",
+        "hint_on_wrong": "Check each option against the brief (sharp face, shallow DoF, no motion blur) and the exposure math. Two break constraints; one is a bad workflow habit.",
+        "reveal_on_wrong": "ISO 1600. f/2.8 deepens DoF (breaks shallow-DoF brief); 1/30 s risks camera shake on a handheld face; pushing in post dumps dynamic range and amplifies the noise you were trying to avoid. The ISO bump is the correct lever."
+      }
+    }
+  },
+  "9": {
+    "category": "iris",
+    "kind": "image_choice",
+    "setup": "Two portraits of the same subject, same light, same pose. Only the Camera Iris differs.",
+    "burn_in": {
+      "prompt": "Which photo used the wider Camera Iris?",
+      "options": [
+        {
+          "id": "a",
+          "text": "Everything sharp — subject and background both in focus",
+          "image": "renders/bokeh_f22.0.avif",
+          "image_alt": "Deep-focus portrait, background sharp"
+        },
+        {
+          "id": "b",
+          "text": "Subject sharp, background dissolves into soft bokeh",
+          "image": "renders/bokeh_f1.2.avif",
+          "image_alt": "Shallow-focus portrait, background blurred"
+        }
+      ],
+      "correct": "b",
+      "feedback_on_correct": "Correct! A wider Iris lets in more light from more angles, which collapses depth of field — the background falls out of focus into bokeh, while the subject plane stays sharp.",
+      "hint_on_wrong": "Which one has the bokeh? That's the tell for a wide Iris.",
+      "reveal_on_wrong": "The one with bokeh. Wide Iris = shallow depth of field = blurry background behind the sharp subject."
+    },
+    "variants": {
+      "low": {
+        "prompt": "Which photo has the more open (wider) Iris?",
+        "options": [
+          {
+            "id": "a",
+            "text": "Background sharp",
+            "image": "renders/bokeh_f22.0.avif",
+            "image_alt": "Deep-focus portrait"
+          },
+          {
+            "id": "b",
+            "text": "Background blurry",
+            "image": "renders/bokeh_f1.2.avif",
+            "image_alt": "Shallow-focus portrait"
+          }
+        ],
+        "correct": "b",
+        "feedback_on_correct": "Correct! Wide Iris = blurry background = bokeh.",
+        "hint_on_wrong": "Remember from the Camera Iris lesson: wider = blurrier background.",
+        "reveal_on_wrong": "The blurry-background one. Wider Iris drops the background out of focus."
+      },
+      "medium": {
+        "prompt": "Which photo used the wider Camera Iris?",
+        "options": [
+          {
+            "id": "a",
+            "text": "Everything sharp — subject and background both in focus",
+            "image": "renders/bokeh_f22.0.avif",
+            "image_alt": "Deep-focus portrait"
+          },
+          {
+            "id": "b",
+            "text": "Subject sharp, background dissolves into soft bokeh",
+            "image": "renders/bokeh_f1.2.avif",
+            "image_alt": "Shallow-focus portrait"
+          }
+        ],
+        "correct": "b",
+        "feedback_on_correct": "Correct! A wider Iris collapses depth of field: the background falls into bokeh while the subject stays sharp.",
+        "hint_on_wrong": "Which one has the bokeh? That's the tell for a wide Iris.",
+        "reveal_on_wrong": "The one with bokeh. Wide Iris = shallow depth of field = blurry background behind the sharp subject."
+      },
+      "high": {
+        "prompt": "One frame was shot at f/1.2, the other at f/22. Which is f/1.2?",
+        "options": [
+          {
+            "id": "a",
+            "text": "Deep-focus frame (background sharp)",
+            "image": "renders/bokeh_f22.0.avif",
+            "image_alt": "f/22 deep-focus portrait"
+          },
+          {
+            "id": "b",
+            "text": "Shallow-focus frame (creamy bokeh behind subject)",
+            "image": "renders/bokeh_f1.2.avif",
+            "image_alt": "f/1.2 shallow-focus portrait"
+          }
+        ],
+        "correct": "b",
+        "feedback_on_correct": "Correct! f/1.2 has ~18 stops more light-gathering area than f/22 and a DoF measured in centimeters at portrait distance — hence the cream.",
+        "hint_on_wrong": "f-stop numbers are *inverse* to opening size. f/1.2 is a huge opening; f/22 is a pinhole.",
+        "reveal_on_wrong": "The shallow-focus frame. The f-number is the inverse ratio (focal length / pupil diameter) — small number, big opening, shallow DoF."
+      }
+    }
+  },
+  "10": {
+    "category": "combo",
+    "image": "renders/motion_s3.5.avif",
+    "image_alt": "Placeholder — tripod night scene with car light trails (not yet rendered)",
+    "setup": "Night street photograph on a tripod. You want: long, glowing light trails from passing cars, buildings rendered sharp, and as little grain as possible.",
+    "burn_in": {
+      "prompt": "Which exposure gets you all three?",
+      "options": [
+        {"id": "a", "text": "f/8, 30 s, ISO 100"},
+        {"id": "b", "text": "f/2.8, 1/60 s, ISO 6400"},
+        {"id": "c", "text": "f/16, 1/500 s, ISO 100"}
+      ],
+      "correct": "a",
+      "feedback_on_correct": "Correct! 30 s lets cars streak through the frame as long trails; f/8 is a middle aperture — sharp corners, deep DoF; ISO 100 keeps grain minimal. The tripod makes the 30 s exposure possible.",
+      "hint_on_wrong": "Check each option against the three constraints: long trails (long shutter), sharp buildings (deep DoF), low grain (low ISO).",
+      "reveal_on_wrong": "f/8, 30 s, ISO 100. Option (b) freezes cars into points instead of trails; option (c) would be massively underexposed at night and 1/500 s won't make trails."
+    },
+    "variants": {
+      "low": {
+        "prompt": "Which exposure makes the car lights streak into trails?",
+        "options": [
+          {"id": "a", "text": "Long shutter, low ISO (tripod)"},
+          {"id": "b", "text": "Fast shutter, high ISO (handheld)"}
+        ],
+        "correct": "a",
+        "feedback_on_correct": "Correct! Trails need a shutter open long enough for the car to travel across the frame.",
+        "hint_on_wrong": "Remember from the Capture Duration lesson: longer shutter = more motion recorded = trails.",
+        "reveal_on_wrong": "The long-shutter option. Trails are motion stretched across time — you need the time for the light to paint."
+      },
+      "medium": {
+        "prompt": "Which exposure gets you all three?",
+        "options": [
+          {"id": "a", "text": "f/8, 30 s, ISO 100"},
+          {"id": "b", "text": "f/2.8, 1/60 s, ISO 6400"},
+          {"id": "c", "text": "f/16, 1/500 s, ISO 100"}
+        ],
+        "correct": "a",
+        "feedback_on_correct": "Correct! 30 s lets the cars streak; f/8 keeps buildings sharp; ISO 100 keeps grain minimal.",
+        "hint_on_wrong": "Check each option against the three constraints: long trails (long shutter), sharp buildings (deep DoF), low grain (low ISO).",
+        "reveal_on_wrong": "f/8, 30 s, ISO 100. (b) freezes cars into points; (c) would be massively underexposed at night."
+      },
+      "high": {
+        "prompt": "Cityscape at night, tripod-locked. Passing traffic ≈ 5 s end-to-end across the frame; buildings need hyperfocal sharpness; you want ≤ 1/3 EV noise floor. Pick the exposure:",
+        "options": [
+          {"id": "a", "text": "f/8, 30 s, ISO 100 — trails complete, f/8 hyperfocal, ISO 100 floor"},
+          {"id": "b", "text": "f/2.8, 1/60 s, ISO 6400 — fast-handheld style"},
+          {"id": "c", "text": "f/22, 30 s, ISO 100 — stopped way down"},
+          {"id": "d", "text": "f/11, 5 s, ISO 400 — \"safer\" middle ground"}
+        ],
+        "correct": "a",
+        "feedback_on_correct": "Correct! f/8 sits in the diffraction-vs-DoF sweet spot; 30 s ≫ 5 s so every car completes its trail; ISO 100 holds the noise floor.",
+        "hint_on_wrong": "f/22 looks tempting for DoF but diffraction kills sharpness. f/11 with 5 s is on the edge — cars starting mid-frame won't complete. High-ISO handheld fails all three constraints.",
+        "reveal_on_wrong": "f/8, 30 s, ISO 100. f/22 diffraction-softens; 5 s lets some cars trail only partly; f/2.8 + high ISO loses DoF and adds grain."
+      }
+    }
   }
 }

@@ -1,0 +1,30 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Dial Control</title><link rel="stylesheet" href="_shell.css">
+<style>
+.dial-row { display:flex; gap:22px; align-items:flex-start; }
+.dial { position:relative; width:110px; height:110px; border-radius:50%; background: radial-gradient(circle at 30% 28%, #34343a 0%, #1c1c1f 60%, #141416 100%); border:1px solid var(--stroke-3); box-shadow: var(--shadow-button), 0 0 0 4px var(--bg-0) inset; display:flex; align-items:center; justify-content:center; }
+.dial::before { content:""; position:absolute; inset:14px; border-radius:50%; border:1px dashed var(--stroke-2); }
+.dial-readout { font-family:var(--font-display); font-size:22px; color:var(--fg-0); }
+.dial-indicator { position:absolute; top:6px; left:50%; width:2px; height:14px; background:var(--amber-400); transform-origin:50% 49px; box-shadow:0 0 6px var(--amber-glow);}
+.dial-label { font-family:var(--font-mono); font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--fg-3); text-align:center; margin-top:8px;}
+</style></head>
+<body><div class="card">
+  <div class="label-plate" style="margin-bottom:14px;">Dial · ISO, shutter-speed, or any stepped value</div>
+  <div class="dial-row">
+    <div>
+      <div class="dial"><span class="dial-indicator" style="transform:translateX(-50%) rotate(-40deg);"></span><span class="dial-readout">100</span></div>
+      <div class="dial-label">ISO · 100</div>
+    </div>
+    <div>
+      <div class="dial"><span class="dial-indicator" style="transform:translateX(-50%) rotate(20deg);"></span><span class="dial-readout">400</span></div>
+      <div class="dial-label">ISO · 400</div>
+    </div>
+    <div>
+      <div class="dial"><span class="dial-indicator" style="transform:translateX(-50%) rotate(90deg);"></span><span class="dial-readout">1600</span></div>
+      <div class="dial-label">ISO · 1600</div>
+    </div>
+    <div>
+      <div class="dial"><span class="dial-indicator" style="transform:translateX(-50%) rotate(140deg);"></span><span class="dial-readout">6400</span></div>
+      <div class="dial-label">ISO · 6400</div>
+    </div>
+  </div>
+</div></body></html>

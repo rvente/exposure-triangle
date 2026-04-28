@@ -53,6 +53,13 @@ class StateStore:
             attempts=dict(data.get("attempts", {})),
             latency_ms=dict(data.get("latency_ms", {})),
             first_try_correct=dict(data.get("first_try_correct", {})),
+            proficiency=data.get("proficiency", 0.0),
+            proficiency_ewma=data.get("proficiency_ewma", 0.0),
+            bucket=data.get("bucket", "medium"),
+            pending_bucket=data.get("pending_bucket", "medium"),
+            pending_bucket_count=data.get("pending_bucket_count", 0),
+            bonus_unlocked=data.get("bonus_unlocked", False),
+            variant_selections=dict(data.get("variant_selections", {})),
         )
 
     def save(self, state: State) -> None:

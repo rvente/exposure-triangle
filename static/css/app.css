@@ -1,8 +1,95 @@
+html, body { min-height: 100vh; }
 body {
   background: #111;
   color: #eee;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  margin: 0;
+}
+
+:root {
+  --accent: #aaa;
+  --accent-soft: rgba(170, 170, 170, 0.45);
+  --muted-text: #b3b3b3;
+}
+
+/* ─── Slide-deck shell ───────────────────────────────────────────────── */
+/* Each flow page fills the viewport so the app reads as a deck, not a
+   scrolling article. Chapter nav pins to the top, page-nav falls to the
+   bottom. Content flexes vertically between. */
+.app-shell {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 1rem 1.25rem 1.4rem;
+}
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.slide-content {
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+/* Pseudo-spacers flank the non-nav content so it vertically centers when
+   the page is short, while tall pages flow naturally from the top. The
+   spacer BEFORE page-nav (which has margin-top: auto) wins only if the
+   content above leaves extra room — otherwise page-nav anchors the
+   bottom of the viewport on tall screens. */
+.slide-content::before {
+  content: "";
+  flex: 0.4 1 0;
+  min-height: 0;
+}
+.slide-content > .page-nav { margin-top: auto; }
+
+/* Bootstrap-default low-contrast greys are unreadable on a dark background.
+   Push muted/secondary copy back into a legible range. */
+.text-muted,
+.text-body-secondary,
+.lead.text-muted,
+.fst-italic.text-muted {
+  color: var(--muted-text) !important;
+}
+
+/* Replace Bootstrap's blue primary with a neutral grey across all buttons. */
+.btn-primary {
+  --bs-btn-bg: #555;
+  --bs-btn-border-color: #6e6e6e;
+  --bs-btn-color: #f0f0f0;
+  --bs-btn-hover-bg: #666;
+  --bs-btn-hover-border-color: #888;
+  --bs-btn-hover-color: #fff;
+  --bs-btn-active-bg: #444;
+  --bs-btn-active-border-color: #888;
+  --bs-btn-disabled-bg: #3a3a3a;
+  --bs-btn-disabled-border-color: #555;
+  --bs-btn-disabled-color: #999;
+}
+
+.btn-outline-primary {
+  --bs-btn-color: #d0d0d0;
+  --bs-btn-border-color: #555;
+  --bs-btn-bg: transparent;
+  --bs-btn-hover-bg: #2a2a2a;
+  --bs-btn-hover-border-color: var(--accent);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-active-bg: #3a3a3a;
+  --bs-btn-active-border-color: var(--accent);
+  --bs-btn-active-color: #fff;
+  --bs-btn-disabled-color: #777;
+  --bs-btn-disabled-border-color: #444;
+}
+
+.btn-outline-secondary {
+  --bs-btn-color: #c0c0c0;
+  --bs-btn-border-color: #555;
 }
 
 .container { max-width: 960px; }
@@ -14,9 +101,503 @@ body {
 
 .technical-term.faded { opacity: 0.35; font-style: italic; }
 
+.scene-caption {
+  max-width: 720px;
+  margin: 0.4rem auto 0;
+  text-align: center;
+  line-height: 1.5;
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+
+/* Local fallback for Bootstrap `.text-center` so offline renders (atlas
+   screenshots, any future air-gapped deploy) still center text without
+   the CDN stylesheet. Bootstrap's `!important` form takes precedence
+   when the CDN does load, so this doesn't fight anything. */
+.text-center { text-align: center; }
+
+/* Second-chance quiz state transitions: neutral → amber (first wrong) →
+   red (locked). All options share a single transition so a click reads
+   as a smooth state change rather than a flash. */
+.quiz-option,
+.image-quiz-option {
+  transition: background-color 280ms ease, color 280ms ease,
+              border-color 280ms ease, opacity 280ms ease,
+              box-shadow 280ms ease;
+}
 .quiz-option { padding: 0.8rem 1rem; }
-.quiz-option.correct { background: #1a3a1a; color: #8f8; border-color: #4a4; }
-.quiz-option.incorrect { background: #3a1a1a; color: #f88; border-color: #a44; }
-.quiz-option.disabled-wrong { background: #222; color: #666; border-color: #555; opacity: 0.6; }
+.quiz-option.correct,
+.image-quiz-option.correct {
+  background: #1a3a1a;
+  color: #8f8;
+  border-color: #4a4;
+  box-shadow: 0 0 0 1px #4a4 inset;
+}
+.quiz-option.incorrect,
+.image-quiz-option.incorrect {
+  background: #3a1a1a;
+  color: #f88;
+  border-color: #a44;
+  box-shadow: 0 0 0 1px #a44 inset;
+  animation: shakeWrong 360ms ease-out 1;
+}
+/* First-wrong amber state: locally gray the picked option but leave the
+   others interactive. The amber comes from the hint text underneath;
+   the chosen option fades into a quiet disabled state. */
+.quiz-option.disabled-wrong,
+.image-quiz-option.disabled-wrong {
+  background: #2a2118;
+  color: #8a7a5a;
+  border-color: #5a4a2a;
+  opacity: 0.65;
+}
+@keyframes shakeWrong {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-4px); }
+  40%      { transform: translateX(4px); }
+  60%      { transform: translateX(-3px); }
+  80%      { transform: translateX(2px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .quiz-option.incorrect,
+  .image-quiz-option.incorrect { animation: none; }
+}
+/* Feedback text state colors (kept text-success/warning/danger classes
+   from Bootstrap but with smoother transitions for the in-place swap). */
+.quiz-feedback { transition: opacity 200ms ease; }
+.quiz-feedback .text-warning { color: #f0b858 !important; }
+.quiz-feedback .text-success { color: #7ddb7d !important; }
+.quiz-feedback .text-danger  { color: #f27d7d !important; }
+
+/* ─── Image-choice quiz (astrophotography) ───────────────────────────── */
+.image-quiz-options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: stretch;
+  gap: 1rem;
+}
+.image-quiz-option {
+  flex: 1 1 320px;
+  max-width: 460px;
+  padding: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.image-quiz-option:disabled { opacity: 1; }
+.image-quiz-img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 4px;
+  display: block;
+}
+.image-quiz-label {
+  font-size: 1rem;
+  font-weight: 500;
+  text-align: center;
+}
+.image-quiz-credit {
+  font-size: 0.7rem;
+  opacity: 0.5;
+  text-align: center;
+}
+.image-quiz-option.correct { background: #1a3a1a; color: #8f8; border-color: #4a4; }
+.image-quiz-option.incorrect { background: #3a1a1a; color: #f88; border-color: #a44; }
+.image-quiz-option.disabled-wrong { background: #222; color: #888; border-color: #555; opacity: 0.6; }
 
 .quiz-feedback { min-height: 2.5rem; font-size: 0.95rem; }
+
+/* ─── Snap slider (iris + duration lessons) ──────────────────────────── */
+.slider-viewer, .toggle-viewer {
+  width: 100%;
+  max-width: 820px;
+  aspect-ratio: 16 / 9;
+  margin: 0 auto;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #0a0a0a;
+}
+.slider-image, .toggle-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.slider-label, .toggle-label {
+  font-size: 1.1rem;
+  font-variant-numeric: tabular-nums;
+  color: #ddd;
+  margin-top: 0.4rem;
+}
+.slider-row input[type="range"] {
+  flex: 1;
+  max-width: 420px;
+  accent-color: var(--accent);
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  background: #444;
+  border-radius: 3px;
+  outline: none;
+}
+.slider-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+}
+.slider-row input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: none;
+  cursor: pointer;
+}
+
+/* ─── Toggle group (sensitivity lesson) ──────────────────────────────── */
+.toggle-group .toggle-btn {
+  min-width: 6rem;
+}
+.toggle-group .toggle-btn.active {
+  background: #444;
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.compare-viewer {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  aspect-ratio: 16 / 9;
+  margin: 0 auto;
+  cursor: ew-resize;
+  user-select: none;
+  touch-action: none;
+  overflow: hidden;
+  border-radius: 6px;
+}
+.compare-viewer img {
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+.compare-viewer .compare-overlay { clip-path: inset(0 0 0 50%); }
+.compare-handle {
+  position: absolute; top: 0; left: 50%;
+  width: 3px; height: 100%;
+  background: var(--accent);
+  transform: translateX(-50%);
+  pointer-events: none;
+  box-shadow: 0 0 8px var(--accent-soft);
+}
+.compare-handle::before {
+  content: '\25C0 \25B6';
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--accent); color: #000;
+  font-weight: bold;
+  padding: 0.3rem 0.7rem;
+  border-radius: 16px;
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+}
+.compare-label {
+  position: absolute; bottom: 0.8rem;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.6rem;
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 4px;
+  pointer-events: none;
+}
+.compare-label-left { left: 0.8rem; }
+.compare-label-right { right: 0.8rem; }
+
+/* ─── Triangle summary (lesson 4) ────────────────────────────────────── */
+.bucket-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 1.5rem;
+  margin: 1rem 0;
+}
+.bucket-item {
+  flex: 1 1 180px;
+  max-width: 220px;
+  text-align: center;
+}
+.bucket-icon {
+  font-size: 2.4rem;
+  line-height: 1;
+  margin-bottom: 0.6rem;
+}
+.bucket-label {
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+.bucket-label em {
+  opacity: 0.85;
+  font-size: 0.88rem;
+}
+.summary-body {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  opacity: 0.85;
+  text-align: center;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.summary-insight {
+  font-style: italic;
+  font-size: 1.05rem;
+  color: #ddd;
+  text-align: center;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ─── Home (s0) ──────────────────────────────────────────────────────── */
+.home-lead {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.home-tagline {
+  font-size: 0.95rem;
+  color: #b3b3b3;
+  line-height: 1.6;
+  max-width: 600px;
+  margin: 1rem auto 0;
+}
+.attribution {
+  font-size: 0.8rem;
+  color: #888;
+  letter-spacing: 0.05em;
+}
+
+/* ─── Intro (s-drama) ────────────────────────────────────────────────── */
+.intro-body {
+  max-width: 820px;
+  margin: 0 auto 1.5rem;
+  line-height: 1.55;
+  font-size: 1rem;
+}
+.intro-body p { margin-bottom: 0.6rem; }
+.intro-divider {
+  border-top: 1px solid #333;
+  margin: 1.2rem auto 0.8rem;
+  width: 600px;
+  max-width: 80vw;
+}
+.intro-sidebar {
+  max-width: 760px;
+  margin: 0 auto 1rem;
+  font-size: 0.9rem;
+  color: #c5c5c5;
+  line-height: 1.5;
+}
+.intro-sidebar-head {
+  font-weight: 500;
+  color: #ddd;
+  margin-bottom: 0.4rem;
+}
+
+/* ─── Pre-interactive teaching showcase (s3, s6) ─────────────────────── */
+.showcase-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 1.5rem;
+  margin: 0.5rem 0 1.2rem;
+}
+.showcase-card {
+  flex: 1 1 220px;
+  max-width: 340px;
+  text-align: center;
+}
+.showcase-card img {
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  display: block;
+}
+.showcase-card .showcase-label {
+  font-size: 0.9rem;
+  color: #ccc;
+  margin-top: 0.4rem;
+}
+
+/* ─── Reference card polish ──────────────────────────────────────────── */
+.ref-table {
+  font-size: 0.85rem;
+}
+.ref-table th,
+.ref-table td {
+  color: #e0e0e0;
+  vertical-align: middle;
+}
+.ref-table th {
+  font-weight: 600;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #cfcfcf;
+}
+.ref-table .small,
+.ref-table .text-muted {
+  color: #c0c0c0 !important;
+  font-size: 0.78rem;
+}
+.ref-table .icon { font-size: 1rem; }
+/* Override Bootstrap table-dark muted defaults for legibility. */
+.table-dark {
+  --bs-table-color: #e0e0e0;
+  --bs-table-striped-color: #e0e0e0;
+  --bs-table-bg: #1a1a1a;
+  --bs-table-striped-bg: #202020;
+  --bs-table-border-color: #2e2e2e;
+}
+
+/* ─── Page nav (Previous / Advance) ──────────────────────────────────── */
+.page-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5rem;
+  gap: 1rem;
+}
+.page-nav .nav-form { margin: 0; }
+.page-nav .nav-spacer { display: inline-block; }
+
+/* ─── Chapter nav (top of every flow page) ───────────────────────────── */
+/* Styled as a dim progress bar rather than a primary nav. Each chapter is
+   a thin segment with a bottom border that fills in as the user
+   progresses. Still clickable for back-navigation. */
+.chapter-nav {
+  margin-bottom: 1.25rem;
+  flex-shrink: 0;
+}
+.chapter-list {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  gap: 4px;
+  font-size: 0.7rem;
+}
+.chapter-item {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.chapter-item a {
+  display: block;
+  padding: 0.35rem 0.4rem 0.45rem;
+  color: #555;
+  text-decoration: none;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-bottom: 2px solid #242424;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  position: relative;
+  transition: color 180ms ease;
+}
+/* Progress-bar fill-in: the underline is a zero-width bar that sweeps
+   left→right when .chapter-nav is marked .progressed (added via JS on
+   mount). The per-item --chapter-delay from the template staggers the
+   sweep so passed chapters "fill in" one after another. */
+.chapter-item a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 100%;
+  bottom: -2px;
+  height: 2px;
+  background: transparent;
+  transition: right 520ms ease-out;
+  transition-delay: var(--chapter-delay, 0ms);
+}
+.chapter-nav.progressed .chapter-item.passed a::after,
+.chapter-nav.progressed .chapter-item.active a::after {
+  right: 0;
+}
+.chapter-item.passed a::after { background: #5e5e5e; }
+.chapter-item.active a::after { background: var(--accent); }
+.chapter-item.passed a { color: #8a8a8a; }
+.chapter-item.active a {
+  color: #f0f0f0;
+  font-weight: 500;
+}
+.chapter-item a:hover { color: #ddd; }
+.chapter-item.upcoming a:hover::after {
+  right: 70%;
+  background: #3a3a3a;
+}
+@media (prefers-reduced-motion: reduce) {
+  .chapter-item a::after { transition: none; transition-delay: 0s; }
+}
+.chapter-nav.progressed-instant .chapter-item a::after {
+  transition: none;
+  transition-delay: 0s;
+}
+
+/* ─── Paragraph reveal (Brilliant-style cascade on page enter) ───────── */
+/* Direct children of .slide-content start hidden, fade in on a staggered
+   delay set via --reveal-delay. Any user input (pointerdown / keydown /
+   scroll) flips the shell to .reveal-skip, which drops the delay to 0
+   and makes the remaining blocks snap in. */
+.slide-content > * {
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 420ms ease-out, transform 420ms ease-out;
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+.slide-content.reveal-ready > * {
+  opacity: 1;
+  transform: none;
+}
+.slide-content.reveal-skip > * {
+  transition: none !important;
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .slide-content > * {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ─── Idle-glow nudge (60s dwell on Advance) ─────────────────────────── */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(200, 200, 200, 0.0); }
+  50%      { box-shadow: 0 0 12px 3px rgba(200, 200, 200, 0.35); }
+}
+.btn.glow-nudge { animation: glowPulse 2.2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .btn.glow-nudge { animation: none; outline: 1px solid var(--accent); }
+}
+
+/* ─── Auto-drift cue (widgets softly cycle while idle) ───────────────── */
+/* The drift is driven by JS; this class provides a subtle shimmer on the
+   range-track so users read the widget as "alive / touchable". */
+.slider-row.auto-drifting input[type="range"],
+.compare-viewer.auto-drifting .compare-handle {
+  transition: filter 600ms ease;
+  filter: brightness(1.05);
+}

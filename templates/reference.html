@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Reference Card{% endblock %}
+{% block content %}
+<h1 class="mb-2">{{ ref.title }}</h1>
+<p class="text-muted mb-4">{{ ref.subtitle }}</p>
+
+<div class="table-responsive">
+  <table class="table table-dark table-striped align-middle ref-table">
+    <thead>
+      <tr>
+        <th>Setting</th>
+        <th>Scale</th>
+        <th>More light →</th>
+        <th>Side effect</th>
+        <th>Technical term &amp; units</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in ref.rows %}
+      <tr>
+        <td><span class="icon me-1">{{ row.icon }}</span><strong>{{ row.setting }}</strong></td>
+        <td>{{ row.scale }}</td>
+        <td>{{ row.more_light }}</td>
+        <td>{{ row.side_effect | markdown_inline }}</td>
+        <td>
+          <strong>{{ row.technical.name }}</strong> ({{ row.technical.unit }})<br>
+          <span class="small text-muted">{{ row.technical.detail }}</span>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="alert alert-secondary mt-4" role="note">
+  <strong>Vocabulary bridge.</strong> {{ ref.vocabulary_bridge | markdown_inline }}
+</div>
+
+<p class="fst-italic text-muted mt-4">{{ ref.closing }}</p>
+
+<div class="page-nav">
+  {% if prev_url %}<a href="{{ prev_url }}" class="btn btn-outline-secondary" id="previous-btn">← Previous</a>{% else %}<span class="nav-spacer"></span>{% endif %}
+  <a href="/" class="btn btn-outline-primary">Home →</a>
+</div>
+{% endblock %}

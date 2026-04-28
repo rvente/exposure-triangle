@@ -6,3 +6,6 @@ instance/
 playwright-report/
 test-results/
 .playwright/
+tests/_atlas_output/
+_static_build/
+design/*.zip
