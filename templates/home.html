@@ -1,23 +1,25 @@
 {% extends "base.html" %}
+{% from "_icons.html" import icon %}
 {% block title %}Exposure Triangle — Start{% endblock %}
 {% block content %}
 <div class="text-center py-4">
   <h1 class="display-5 mb-2">The Exposure Triangle</h1>
-  <p class="lead text-muted mb-4">An interactive lesson on how light becomes a photograph</p>
+  <p class="lead text-muted mb-2">An interactive lesson on how light becomes a photograph</p>
+  <p class="home-byline mb-4">A project by <strong>Blake Vente</strong> &middot; rv2459 &middot; COMSW4170</p>
 
   <p class="home-lead">Think of your camera's sensor as a <strong>bucket</strong> collecting rain.</p>
 
   <div class="bucket-row my-4">
     <div class="bucket-item">
-      <div class="bucket-icon">👁</div>
+      <div class="bucket-icon">{{ icon('eye') }}</div>
       <div class="bucket-label"><strong>Camera Iris</strong><br>How wide is the opening?</div>
     </div>
     <div class="bucket-item">
-      <div class="bucket-icon">⏲</div>
+      <div class="bucket-icon">{{ icon('timer') }}</div>
       <div class="bucket-label"><strong>Capture Duration</strong><br>How long is it left out?</div>
     </div>
     <div class="bucket-item">
-      <div class="bucket-icon">⚡</div>
+      <div class="bucket-icon">{{ icon('zap') }}</div>
       <div class="bucket-label"><strong>Sensor Sensitivity</strong><br>How big is the bucket?</div>
     </div>
   </div>
@@ -30,7 +32,5 @@
   <form method="post" action="/start" class="mt-4" data-static-action="start">
     <button id="start-btn" class="btn btn-primary btn-lg" type="submit">Start</button>
   </form>
-
-  <p class="attribution mt-5">Blake Vente (rv2459) — COMSW4170</p>
 </div>
 {% endblock %}

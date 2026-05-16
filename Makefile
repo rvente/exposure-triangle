@@ -1,4 +1,4 @@
-.PHONY: setup serve atlas atlas-static freeze serve-static test test-e2e test-freeze clean
+.PHONY: setup serve atlas atlas-static freeze serve-static test test-e2e test-freeze test-js clean
 
 setup:
 	uv sync
@@ -23,10 +23,13 @@ test:
 	uv run pytest tests/test_reducer.py -v
 
 test-e2e:
-	xvfb-run -a uv run pytest tests/test_e2e.py -v
+	xvfb-run -a uv run pytest tests/test_e2e.py tests/test_scrub_dials_e2e.py tests/test_image_preview_e2e.py tests/test_floating_nav_e2e.py tests/test_chapter_nav_collapse_e2e.py tests/test_pad_e2e.py tests/test_compare_drag_e2e.py tests/test_quiz_options_e2e.py -v
 
 test-freeze:
 	uv run pytest tests/test_freeze.py -v
+
+test-js:
+	node --test 'tests/js/*.test.cjs'
 
 clean:
 	rm -rf instance __pycache__ .pytest_cache tests/__pycache__ _static_build

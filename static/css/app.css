@@ -1,603 +1,2329 @@
-html, body { min-height: 100vh; }
-body {
-  background: #111;
-  color: #eee;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  margin: 0;
-}
+/* ============================================================
+   APERTURE — Exposure Triangle design system
+   Dark-room / camera-body visual language.
+   Tuned for long reading sessions in low light.
+   ============================================================ */
+
+/* --- Fonts ---------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&display=swap');
 
 :root {
-  --accent: #aaa;
-  --accent-soft: rgba(170, 170, 170, 0.45);
-  --muted-text: #b3b3b3;
+  /* Backgrounds — safelight darkroom, warm carbon */
+  --bg-0:   #0b0b0c;
+  --bg-1:   #141416;
+  --bg-2:   #1c1c1f;
+  --bg-3:   #26262b;
+  --bg-4:   #34343a;
+
+  /* Foregrounds — light-meter 5-step scale */
+  --fg-0:   #f4f1ea;
+  --fg-1:   #d6d2c6;
+  --fg-2:   #9a958a;
+  --fg-3:   #6b6860;
+  --fg-4:   #403e3a;
+
+  /* Strokes */
+  --stroke-1: rgba(246, 242, 230, 0.06);
+  --stroke-2: rgba(246, 242, 230, 0.10);
+  --stroke-3: rgba(246, 242, 230, 0.18);
+
+  /* Accents — safelight amber + meter colors */
+  --amber-300: #f3c67a;
+  --amber-400: #e0a85a;
+  --amber-500: #c08140;
+  --amber-glow: rgba(224, 168, 90, 0.18);
+  --meter-green:    #7ba86f;
+  --meter-green-bg: rgba(123, 168, 111, 0.10);
+  --meter-red:      #c0564a;
+  --meter-red-bg:   rgba(192, 86, 74, 0.10);
+  --meter-cyan:     #6faaaa;
+
+  /* Semantic aliases */
+  --link:       var(--amber-400);
+  --link-hover: var(--amber-300);
+
+  /* Type */
+  --font-display: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  --font-body:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --text-xs:   12px;
+  --text-sm:   13px;
+  --text-base: 15px;
+  --text-md:   17px;
+  --text-lg:   20px;
+  --text-xl:   26px;
+  --text-2xl:  34px;
+  --text-3xl:  44px;
+  --text-4xl:  60px;
+
+  --leading-tight: 1.15;
+  --leading-snug:  1.35;
+  --leading-body:  1.6;
+  --leading-loose: 1.8;
+
+  --tracking-tight:  -0.015em;
+  --tracking-normal: 0;
+  --tracking-wide:   0.08em;
+  --tracking-loose:  0.16em;
+
+  /* Spacing — 4px grid */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  24px;
+  --space-6:  32px;
+  --space-7:  48px;
+  --space-8:  64px;
+  --space-9:  96px;
+
+  /* Radii — subtle chamfers */
+  --radius-sm: 3px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 16px;
+  --radius-round: 999px;
+
+  /* Elevation — machined metal */
+  --shadow-plate:
+    0 1px 0 rgba(255,255,255,0.04) inset,
+    0 -1px 0 rgba(0,0,0,0.4) inset,
+    0 1px 2px rgba(0,0,0,0.5);
+  --shadow-button:
+    0 1px 0 rgba(255,255,255,0.05) inset,
+    0 -1px 0 rgba(0,0,0,0.35) inset,
+    0 2px 6px rgba(0,0,0,0.55);
+  --shadow-well:
+    0 1px 0 rgba(255,255,255,0.03) inset,
+    0 2px 6px rgba(0,0,0,0.55) inset;
+  --shadow-card:
+    0 1px 0 rgba(255,255,255,0.04) inset,
+    0 12px 32px rgba(0,0,0,0.55),
+    0 2px 6px rgba(0,0,0,0.6);
+  --shadow-focus-ring: 0 0 0 3px var(--amber-glow);
+
+  /* Motion — aperture blades, not rubber balls */
+  --ease-shutter:  cubic-bezier(0.2, 0.7, 0.15, 1);
+  --ease-iris:     cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast:    120ms;
+  --dur-base:    220ms;
+  --dur-slow:    420ms;
+  --dur-shutter: 90ms;
 }
 
-/* ─── Slide-deck shell ───────────────────────────────────────────────── */
-/* Each flow page fills the viewport so the app reads as a deck, not a
-   scrolling article. Chapter nav pins to the top, page-nav falls to the
-   bottom. Content flexes vertically between. */
-.app-shell {
+/* ============================================================
+   BASE
+   ============================================================ */
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  max-width: 1040px;
+  background: var(--bg-0);
+  color: var(--fg-1);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--text-3xl);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg-0);
+  margin: 0 0 var(--space-3);
+}
+h2 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--text-2xl);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg-0);
+  margin: 0 0 var(--space-3);
+}
+h3, h4 {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--text-md);
+  line-height: var(--leading-snug);
+  color: var(--fg-0);
+  margin: 0 0 var(--space-2);
+}
+p {
+  font-family: var(--font-body);
+  color: var(--fg-1);
+  margin: 0 0 var(--space-3);
+}
+strong, b { color: var(--fg-0); font-weight: 600; }
+em { color: var(--fg-0); font-style: italic; }
+hr { border: 0; height: 1px; background: var(--stroke-1); margin: var(--space-6) 0; }
+::selection { background: var(--amber-glow); color: var(--fg-0); }
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus-ring);
+  border-radius: var(--radius-sm);
+}
+
+.lead {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: var(--text-lg);
+  color: var(--fg-2);
+  line-height: var(--leading-snug);
+}
+.text-muted, .small { color: var(--fg-3) !important; }
+.small { font-size: var(--text-sm); }
+.fst-italic { font-style: italic; color: var(--fg-2); }
+
+/* ============================================================
+   SHELL
+   ============================================================ */
+.app-shell {
+  max-width: 860px;
   margin: 0 auto;
-  padding: 1rem 1.25rem 1.4rem;
+  padding: 32px 24px 96px;
+  position: relative;
 }
-.app-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-.slide-content {
-  width: 100%;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-/* Pseudo-spacers flank the non-nav content so it vertically centers when
-   the page is short, while tall pages flow naturally from the top. The
-   spacer BEFORE page-nav (which has margin-top: auto) wins only if the
-   content above leaves extra room — otherwise page-nav anchors the
-   bottom of the viewport on tall screens. */
-.slide-content::before {
-  content: "";
-  flex: 0.4 1 0;
-  min-height: 0;
-}
-.slide-content > .page-nav { margin-top: auto; }
+.app-main { min-height: 60vh; }
 
-/* Bootstrap-default low-contrast greys are unreadable on a dark background.
-   Push muted/secondary copy back into a legible range. */
-.text-muted,
-.text-body-secondary,
-.lead.text-muted,
-.fst-italic.text-muted {
-  color: var(--muted-text) !important;
+/* ============================================================
+   INLINE SVG ICONS — stroke uses currentColor
+   ============================================================ */
+.icon-svg {
+  display: inline-block;
+  vertical-align: middle;
+  width: 24px;
+  height: 24px;
+}
+.bucket-icon .icon-svg {
+  width: 32px;
+  height: 32px;
+  color: var(--fg-0);
+}
+.ref-table .icon .icon-svg {
+  width: 18px;
+  height: 18px;
+  color: var(--fg-0);
+  vertical-align: -4px;
+}
+.btn .icon-svg {
+  width: 16px;
+  height: 16px;
+  vertical-align: -3px;
 }
 
-/* Replace Bootstrap's blue primary with a neutral grey across all buttons. */
-.btn-primary {
-  --bs-btn-bg: #555;
-  --bs-btn-border-color: #6e6e6e;
-  --bs-btn-color: #f0f0f0;
-  --bs-btn-hover-bg: #666;
-  --bs-btn-hover-border-color: #888;
-  --bs-btn-hover-color: #fff;
-  --bs-btn-active-bg: #444;
-  --bs-btn-active-border-color: #888;
-  --bs-btn-disabled-bg: #3a3a3a;
-  --bs-btn-disabled-border-color: #555;
-  --bs-btn-disabled-color: #999;
+/* ============================================================
+   CHAPTER NAV — .chapter-nav > .chapter-list > .chapter-item > a
+   ============================================================ */
+.chapter-nav {
+  position: sticky; top: 0;
+  z-index: 10;
+  display: block;
+  padding: 12px 0 10px;
+  margin: 0 0 40px;
+  border-bottom: 1px solid var(--stroke-2);
+  background: rgba(11, 11, 12, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  /* Collapse on scroll-down, expand on scroll-up (G4 item #8). JS
+     toggles .chapter-nav--collapsed on the element; CSS slides it
+     upward by its own height so it visually retracts above the
+     viewport without breaking sticky-top layout. */
+  transform: translateY(0);
+  transition: transform var(--dur-base, 220ms) var(--ease-standard, ease);
 }
-
-.btn-outline-primary {
-  --bs-btn-color: #d0d0d0;
-  --bs-btn-border-color: #555;
-  --bs-btn-bg: transparent;
-  --bs-btn-hover-bg: #2a2a2a;
-  --bs-btn-hover-border-color: var(--accent);
-  --bs-btn-hover-color: #fff;
-  --bs-btn-active-bg: #3a3a3a;
-  --bs-btn-active-border-color: var(--accent);
-  --bs-btn-active-color: #fff;
-  --bs-btn-disabled-color: #777;
-  --bs-btn-disabled-border-color: #444;
-}
-
-.btn-outline-secondary {
-  --bs-btn-color: #c0c0c0;
-  --bs-btn-border-color: #555;
-}
-
-.container { max-width: 960px; }
-
-.card.bg-dark { background: #1a1a1a !important; border-color: #2a2a2a; }
-.card.bg-dark img { object-fit: cover; max-height: 220px; }
-
-.lesson-body { line-height: 1.65; white-space: pre-wrap; }
-
-.technical-term.faded { opacity: 0.35; font-style: italic; }
-
-.scene-caption {
-  max-width: 720px;
-  margin: 0.4rem auto 0;
-  text-align: center;
-  line-height: 1.5;
-  font-size: 0.8rem;
-  opacity: 0.75;
-}
-
-/* Local fallback for Bootstrap `.text-center` so offline renders (atlas
-   screenshots, any future air-gapped deploy) still center text without
-   the CDN stylesheet. Bootstrap's `!important` form takes precedence
-   when the CDN does load, so this doesn't fight anything. */
-.text-center { text-align: center; }
-
-/* Second-chance quiz state transitions: neutral → amber (first wrong) →
-   red (locked). All options share a single transition so a click reads
-   as a smooth state change rather than a flash. */
-.quiz-option,
-.image-quiz-option {
-  transition: background-color 280ms ease, color 280ms ease,
-              border-color 280ms ease, opacity 280ms ease,
-              box-shadow 280ms ease;
-}
-.quiz-option { padding: 0.8rem 1rem; }
-.quiz-option.correct,
-.image-quiz-option.correct {
-  background: #1a3a1a;
-  color: #8f8;
-  border-color: #4a4;
-  box-shadow: 0 0 0 1px #4a4 inset;
-}
-.quiz-option.incorrect,
-.image-quiz-option.incorrect {
-  background: #3a1a1a;
-  color: #f88;
-  border-color: #a44;
-  box-shadow: 0 0 0 1px #a44 inset;
-  animation: shakeWrong 360ms ease-out 1;
-}
-/* First-wrong amber state: locally gray the picked option but leave the
-   others interactive. The amber comes from the hint text underneath;
-   the chosen option fades into a quiet disabled state. */
-.quiz-option.disabled-wrong,
-.image-quiz-option.disabled-wrong {
-  background: #2a2118;
-  color: #8a7a5a;
-  border-color: #5a4a2a;
-  opacity: 0.65;
-}
-@keyframes shakeWrong {
-  0%, 100% { transform: translateX(0); }
-  20%      { transform: translateX(-4px); }
-  40%      { transform: translateX(4px); }
-  60%      { transform: translateX(-3px); }
-  80%      { transform: translateX(2px); }
+.chapter-nav--collapsed {
+  transform: translateY(-100%);
 }
 @media (prefers-reduced-motion: reduce) {
-  .quiz-option.incorrect,
-  .image-quiz-option.incorrect { animation: none; }
+  .chapter-nav { transition: none; }
 }
-/* Feedback text state colors (kept text-success/warning/danger classes
-   from Bootstrap but with smoother transitions for the in-place swap). */
-.quiz-feedback { transition: opacity 200ms ease; }
-.quiz-feedback .text-warning { color: #f0b858 !important; }
-.quiz-feedback .text-success { color: #7ddb7d !important; }
-.quiz-feedback .text-danger  { color: #f27d7d !important; }
-
-/* ─── Image-choice quiz (astrophotography) ───────────────────────────── */
-.image-quiz-options {
-  display: flex;
+.chapter-list {
+  list-style: none;
+  padding: 0; margin: 0;
+  display: flex; align-items: center; gap: 2px;
   flex-wrap: wrap;
-  justify-content: center;
-  align-items: stretch;
-  gap: 1rem;
 }
-.image-quiz-option {
-  flex: 1 1 320px;
-  max-width: 460px;
-  padding: 0.6rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+.chapter-item {
+  font-family: var(--font-mono);
+  font-size: 11px; letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0;
+  border-radius: var(--radius-sm);
 }
-.image-quiz-option:disabled { opacity: 1; }
-.image-quiz-img {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-  border-radius: 4px;
-  display: block;
+.chapter-item a {
+  display: inline-block;
+  padding: 5px 10px;
+  color: var(--fg-3);
+  text-decoration: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  transition: color var(--dur-fast) var(--ease-standard),
+              background var(--dur-fast) var(--ease-standard),
+              border-color var(--dur-fast) var(--ease-standard);
 }
-.image-quiz-label {
-  font-size: 1rem;
-  font-weight: 500;
-  text-align: center;
+.chapter-item a:hover { color: var(--fg-1); }
+/* `border-bottom: 0` on hover used to be here to cancel a default
+   underline that no longer exists. Without that default it just
+   triggered a stale-color border transition on un-hover (the bottom
+   border re-appeared at currentColor for one frame before fading to
+   transparent — looked like a delayed underline animation). Removed. */
+.chapter-item.passed a { color: var(--fg-2); }
+.chapter-item.active a {
+  color: var(--fg-0);
+  background: var(--bg-2);
+  border-color: var(--stroke-2);
+  box-shadow: var(--shadow-well);
 }
-.image-quiz-credit {
-  font-size: 0.7rem;
-  opacity: 0.5;
-  text-align: center;
-}
-.image-quiz-option.correct { background: #1a3a1a; color: #8f8; border-color: #4a4; }
-.image-quiz-option.incorrect { background: #3a1a1a; color: #f88; border-color: #a44; }
-.image-quiz-option.disabled-wrong { background: #222; color: #888; border-color: #555; opacity: 0.6; }
 
-.quiz-feedback { min-height: 2.5rem; font-size: 0.95rem; }
-
-/* ─── Snap slider (iris + duration lessons) ──────────────────────────── */
-.slider-viewer, .toggle-viewer {
-  width: 100%;
-  max-width: 820px;
-  aspect-ratio: 16 / 9;
-  margin: 0 auto;
-  border-radius: 6px;
-  overflow: hidden;
-  background: #0a0a0a;
-}
-.slider-image, .toggle-image {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-}
-.slider-label, .toggle-label {
-  font-size: 1.1rem;
-  font-variant-numeric: tabular-nums;
-  color: #ddd;
-  margin-top: 0.4rem;
-}
-.slider-row input[type="range"] {
-  flex: 1;
-  max-width: 420px;
-  accent-color: var(--accent);
-  -webkit-appearance: none;
-  appearance: none;
-  height: 6px;
-  background: #444;
-  border-radius: 3px;
-  outline: none;
-}
-.slider-row input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--accent);
+/* ============================================================
+   BUTTONS — override Bootstrap btn classes
+   ============================================================ */
+.btn {
+  font-family: var(--font-body);
+  font-size: 13px; font-weight: 500;
+  color: var(--fg-1);
+  background: var(--bg-3);
+  border: 1px solid var(--stroke-2);
+  border-radius: var(--radius-md);
+  padding: 9px 18px;
+  box-shadow: var(--shadow-button);
   cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-standard),
+              color var(--dur-fast) var(--ease-standard),
+              transform var(--dur-shutter) var(--ease-shutter);
 }
-.slider-row input[type="range"]::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--accent);
-  border: none;
-  cursor: pointer;
+.btn:hover { background: var(--bg-4); color: var(--fg-0); }
+.btn:active { transform: translateY(1px); }
+.btn:focus-visible { box-shadow: var(--shadow-focus-ring), var(--shadow-button); }
+
+.btn-primary, .btn.btn-primary {
+  background: var(--amber-500);
+  color: #0b0b0c;
+  border-color: rgba(0,0,0,.4);
+  font-weight: 600;
+}
+.btn-primary:hover, .btn.btn-primary:hover {
+  background: var(--amber-400);
+  color: #0b0b0c;
+}
+.btn-lg { font-size: var(--text-md); padding: 12px 28px; }
+
+.btn-outline-primary, .btn.btn-outline-primary {
+  background: transparent;
+  color: var(--amber-300);
+  border-color: var(--amber-500);
+  box-shadow: none;
+}
+.btn-outline-primary:hover, .btn.btn-outline-primary:hover {
+  background: var(--amber-glow);
+  color: var(--amber-300);
 }
 
-/* ─── Toggle group (sensitivity lesson) ──────────────────────────────── */
-.toggle-group .toggle-btn {
-  min-width: 6rem;
+.btn-outline-secondary, .btn.btn-outline-secondary {
+  background: transparent;
+  color: var(--fg-2);
+  border-color: var(--stroke-1);
+  box-shadow: none;
 }
-.toggle-group .toggle-btn.active {
-  background: #444;
-  border-color: var(--accent);
-  color: #fff;
+.btn-outline-secondary:hover, .btn.btn-outline-secondary:hover {
+  color: var(--fg-0);
+  background: var(--bg-2);
 }
 
-.compare-viewer {
-  position: relative;
-  width: 100%;
-  max-width: 900px;
-  aspect-ratio: 16 / 9;
-  margin: 0 auto;
-  cursor: ew-resize;
-  user-select: none;
-  touch-action: none;
-  overflow: hidden;
-  border-radius: 6px;
+/* Floating bottom nav (G4 item #7). The per-page page-nav row used to
+   sit inline below content via `margin-top: auto`; it now floats over
+   the bottom of the viewport with a blurred translucent panel.
+   Translucency rule: while the user is hovering over a text block
+   (`.slide-content p`, list items, headings, lesson body), the nav
+   fades so it doesn't occlude the line they're reading. When the user
+   reaches the last viewport of content (IntersectionObserver on the
+   last direct child of `.slide-content`) or hovers outside text, it
+   snaps back to fully opaque — "ready to click". Pointer events stay
+   on regardless; translucency is visual only. */
+.page-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 80;
+  display: flex; justify-content: space-between; align-items: center;
+  gap: var(--space-3);
+  /* Backdrop spans full width, but buttons sit inside the same 860px
+     central column the chapter-nav uses — `50vw - 430px` mirrors the
+     shell edge so desktop pointer-travel to advance is minimized. The
+     `max(24px, ...)` clamp keeps narrow viewports padded normally. */
+  padding:
+    12px
+    max(24px, calc(50vw - 430px + env(safe-area-inset-right, 0px)))
+    calc(12px + env(safe-area-inset-bottom))
+    max(24px, calc(50vw - 430px + env(safe-area-inset-left, 0px)));
+  background: color-mix(in srgb, var(--bg-0, #0c0b09) 70%, transparent);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  backdrop-filter: blur(12px) saturate(1.2);
+  border-top: 1px solid var(--stroke-1);
+  transition: opacity 220ms ease, transform 220ms ease;
+  opacity: 1;
 }
-.compare-viewer img {
-  position: absolute; top: 0; left: 0;
-  width: 100%; height: 100%;
-  object-fit: cover;
-  display: block;
-  pointer-events: none;
+.page-nav.reading:not(.at-end) {
+  opacity: 0.22;
 }
-.compare-viewer .compare-overlay { clip-path: inset(0 0 0 50%); }
-.compare-handle {
-  position: absolute; top: 0; left: 50%;
-  width: 3px; height: 100%;
-  background: var(--accent);
-  transform: translateX(-50%);
-  pointer-events: none;
-  box-shadow: 0 0 8px var(--accent-soft);
-}
-.compare-handle::before {
-  content: '\25C0 \25B6';
-  position: absolute; top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  background: var(--accent); color: #000;
-  font-weight: bold;
-  padding: 0.3rem 0.7rem;
-  border-radius: 16px;
-  font-size: 0.72rem;
-  letter-spacing: 0.2em;
-}
-.compare-label {
-  position: absolute; bottom: 0.8rem;
-  font-size: 0.85rem;
-  padding: 0.3rem 0.6rem;
-  background: rgba(0, 0, 0, 0.55);
-  border-radius: 4px;
-  pointer-events: none;
-}
-.compare-label-left { left: 0.8rem; }
-.compare-label-right { right: 0.8rem; }
+.page-nav > * { pointer-events: auto; }
 
-/* ─── Triangle summary (lesson 4) ────────────────────────────────────── */
+/* Reserve space at the bottom of content so nothing is hidden
+   under the fixed nav. Fallback for browsers without env(safe-area)
+   falls back to 0. */
+.app-main { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+
+.nav-form { margin: 0; }
+.nav-spacer { display: inline-block; min-width: 1px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .page-nav { transition: none; }
+}
+
+/* ============================================================
+   HERO / HOME
+   ============================================================ */
+.home-lead, .home-tagline {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--fg-1);
+  text-align: center;
+  max-width: 560px;
+  margin: 0 auto var(--space-6);
+}
+.home-lead strong { color: var(--amber-300); font-weight: 500; }
+.home-tagline {
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--amber-300);
+  font-size: var(--text-md);
+  margin-top: var(--space-5);
+  line-height: var(--leading-loose);
+}
+
+.display-5 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--text-4xl);
+  color: var(--fg-0);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight);
+  margin: 0 0 var(--space-3);
+}
+
+.attribution {
+  margin-top: var(--space-9);
+  text-align: center;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--text-xs);
+  color: var(--fg-3);
+}
+
+.home-byline {
+  text-align: center;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--text-md);
+  color: var(--amber-300);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-loose);
+}
+.home-byline strong { color: var(--fg-0); font-weight: 500; font-style: normal; }
+
+/* ============================================================
+   BUCKET ROW — home + summary
+   ============================================================ */
 .bucket-row {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 1.5rem;
-  margin: 1rem 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-5);
+  margin: var(--space-6) 0;
 }
-.bucket-item {
-  flex: 1 1 180px;
-  max-width: 220px;
+@media (max-width: 640px) {
+  .bucket-row { grid-template-columns: 1fr; }
+}
+.bucket-item, .bucket-cell {
+  background: var(--bg-1);
+  border: 1px solid var(--stroke-2);
+  border-radius: var(--radius-lg);
+  padding: 24px 20px;
+  box-shadow: var(--shadow-plate);
   text-align: center;
 }
 .bucket-icon {
-  font-size: 2.4rem;
-  line-height: 1;
-  margin-bottom: 0.6rem;
+  color: var(--fg-0);
+  font-size: 28px;
+  margin: 0 auto var(--space-3);
+  display: block;
 }
 .bucket-label {
-  line-height: 1.5;
-  font-size: 0.95rem;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--fg-1);
+  line-height: var(--leading-snug);
+}
+.bucket-label strong {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--text-xl);
+  color: var(--fg-0);
+  display: block;
+  margin-bottom: var(--space-2);
 }
 .bucket-label em {
-  opacity: 0.85;
-  font-size: 0.88rem;
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--fg-2);
+  font-size: var(--text-sm);
 }
+
 .summary-body {
-  font-size: 1.05rem;
+  font-size: var(--text-base);
+  color: var(--fg-1);
   line-height: 1.7;
-  opacity: 0.85;
-  text-align: center;
-  max-width: 700px;
-  margin-left: auto;
-  margin-right: auto;
+  margin: var(--space-6) 0 var(--space-3);
 }
 .summary-insight {
+  font-family: var(--font-display);
   font-style: italic;
-  font-size: 1.05rem;
-  color: #ddd;
+  font-size: var(--text-lg);
+  color: var(--amber-300);
+  margin: var(--space-4) 0 0;
+  line-height: var(--leading-snug);
   text-align: center;
-  max-width: 700px;
-  margin-left: auto;
-  margin-right: auto;
 }
 
-/* ─── Home (s0) ──────────────────────────────────────────────────────── */
-.home-lead {
-  font-size: 1.1rem;
-  line-height: 1.6;
-  max-width: 600px;
-  margin: 0 auto;
+/* ============================================================
+   INTRO / READING
+   ============================================================ */
+.intro-body { max-width: 640px; }
+.intro-body p {
+  margin: 0 0 14px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--fg-1);
 }
-.home-tagline {
-  font-size: 0.95rem;
-  color: #b3b3b3;
-  line-height: 1.6;
-  max-width: 600px;
-  margin: 1rem auto 0;
-}
-.attribution {
-  font-size: 0.8rem;
-  color: #888;
-  letter-spacing: 0.05em;
-}
-
-/* ─── Intro (s-drama) ────────────────────────────────────────────────── */
-.intro-body {
-  max-width: 820px;
-  margin: 0 auto 1.5rem;
-  line-height: 1.55;
-  font-size: 1rem;
-}
-.intro-body p { margin-bottom: 0.6rem; }
 .intro-divider {
-  border-top: 1px solid #333;
-  margin: 1.2rem auto 0.8rem;
-  width: 600px;
-  max-width: 80vw;
+  height: 1px;
+  background: var(--stroke-1);
+  margin: var(--space-6) 0 var(--space-5);
 }
 .intro-sidebar {
-  max-width: 760px;
-  margin: 0 auto 1rem;
-  font-size: 0.9rem;
-  color: #c5c5c5;
-  line-height: 1.5;
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--stroke-1);
+  max-width: 640px;
 }
 .intro-sidebar-head {
-  font-weight: 500;
-  color: #ddd;
-  margin-bottom: 0.4rem;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--text-md);
+  color: var(--fg-0);
+  margin: 0 0 var(--space-2);
+}
+.intro-sidebar p {
+  font-size: 13.5px;
+  color: var(--fg-2);
+  line-height: var(--leading-snug);
 }
 
-/* ─── Pre-interactive teaching showcase (s3, s6) ─────────────────────── */
-.showcase-row {
+/* Debug-only UI: hidden until the user presses `d` to toggle the
+   .debug-revealed class on <html>. Higher specificity than the per-
+   element display rules so we don't need !important. The intro-page
+   HDR toggle (eventual user-facing global setting) is *not* tagged
+   debug-only — only the iris-page debug controls + compare strip. */
+html:not(.debug-revealed) [data-debug-only] {
+  display: none;
+}
+
+/* HDR display-mode toggle. Lives on /intro (preference setter) and on
+   the iris lesson (debug switch that actually swaps bokeh frames). Both
+   bind the same localStorage key via [data-hdr-toggle] and stay in sync
+   through the HDR_EVT broadcast in app.js. */
+.hdr-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--stroke-1, var(--fg-4));
+  border-radius: 999px;
+  background: var(--bg-1);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: var(--tracking-loose);
+  text-transform: uppercase;
+  color: var(--fg-2);
+}
+.hdr-toggle-label em {
+  font-style: normal;
+  color: var(--amber-400);
+  margin-left: 0.25rem;
+}
+.hdr-toggle-pill {
+  display: inline-flex;
+  border-radius: 999px;
+  background: var(--bg-2);
+  padding: 2px;
+}
+.hdr-toggle-btn {
+  background: transparent;
+  border: 0;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  color: var(--fg-1);
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+  transition: background var(--dur-base) var(--ease-standard), color var(--dur-base) var(--ease-standard);
+}
+.hdr-toggle-btn:hover { color: var(--fg-0); }
+.hdr-toggle-btn.is-active {
+  background: var(--amber-400);
+  color: var(--bg-0);
+}
+.intro-sidebar .hdr-toggle { margin-top: var(--space-3); }
+
+/* Page-nav debug variant: small + dimmed so it reads as a dev knob,
+   not lesson chrome. Gains opacity on hover/focus-within so it's
+   still easy to flip without hunting. */
+.hdr-toggle--debug {
+  padding: 0.25rem 0.55rem;
+  font-size: 9px;
+  opacity: 0.45;
+  transition: opacity var(--dur-base) var(--ease-standard);
+}
+.hdr-toggle--debug:hover,
+.hdr-toggle--debug:focus-within { opacity: 1; }
+.hdr-toggle--debug .hdr-toggle-btn { padding: 0.15rem 0.5rem; }
+.hdr-toggle-debug {
   display: flex;
-  flex-wrap: wrap;
+  width: max-content;
+}
+.hdr-debug-row {
+  display: flex;
+  align-items: center;
   justify-content: center;
-  align-items: flex-end;
-  gap: 1.5rem;
-  margin: 0.5rem 0 1.2rem;
+  gap: var(--space-3);
+  margin: var(--space-3) auto var(--space-2);
+  flex-wrap: wrap;
+}
+.hdr-debug-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--stroke-1, var(--fg-4));
+  border-radius: 999px;
+  background: var(--bg-1);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: var(--tracking-loose);
+  text-transform: uppercase;
+  color: var(--fg-2);
+  opacity: 0.45;
+  transition: opacity var(--dur-base) var(--ease-standard);
+}
+html.hdr-on .hdr-debug-controls { opacity: 1; }
+.hdr-debug-knob {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+}
+.hdr-debug-knob input {
+  width: 3.5rem;
+  padding: 0.2rem 0.4rem;
+  background: var(--bg-2);
+  border: 1px solid var(--stroke-1, var(--fg-4));
+  border-radius: 6px;
+  color: var(--fg-0);
+  font: inherit;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.hdr-debug-knob input:focus,
+.hdr-debug-knob select:focus {
+  outline: 1px solid var(--amber-400);
+  outline-offset: 1px;
+}
+.hdr-debug-note {
+  display: inline-block;
+  max-width: 38ch;
+  padding: 0.4rem 0.75rem;
+  border: 1px dashed var(--stroke-1, var(--fg-4));
+  border-radius: 12px;
+  background: var(--bg-1);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: var(--tracking-loose);
+  text-transform: uppercase;
+  color: var(--fg-3);
+  line-height: 1.4;
+}
+.hdr-debug-note code {
+  color: var(--amber-400);
+  font-size: inherit;
+  background: none;
+  padding: 0;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* HDR-variant compare strip — three pinned image stacks below the iris
+   drum, each tied to a specific render variant; all driven by the same
+   #slider-input as the main viewer. */
+.iris-hdr-compare {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--stroke-1);
+}
+.iris-hdr-compare-head {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: var(--tracking-loose);
+  text-transform: uppercase;
+  color: var(--fg-2);
+  margin-bottom: var(--space-3);
+}
+.iris-hdr-compare-grid {
+  display: grid;
+  /* auto-fit so 3-tile and 4-tile (when the PNG-debug is on) layouts
+     both wrap cleanly across screen widths instead of cramming. */
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-3);
+}
+@media (max-width: 720px) {
+  .iris-hdr-compare-grid { grid-template-columns: 1fr; }
+}
+.iris-hdr-compare-tile {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-1);
+  border: 1px solid var(--stroke-1, var(--fg-4));
+  border-radius: 8px;
+  padding: var(--space-3);
+}
+.iris-hdr-compare-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: var(--tracking-loose);
+  text-transform: uppercase;
+  color: var(--fg-0);
+  margin: 0 0 var(--space-2);
+}
+.iris-hdr-compare-stack {
+  position: relative;
+  aspect-ratio: 16/9;
+  background: #000;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: var(--space-2);
+}
+.iris-hdr-compare-stack img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Compositing is now handled by the data-mode="blend" rule in the
+     blend-mode block (alpha-only — plus-lighter was dropped along with
+     the N-slot stack). Black backdrop is the parent stack's background. */
+}
+.iris-hdr-compare-meta {
+  font-size: 11px;
+  color: var(--fg-3);
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Blend-mode debug select — sits above the compare strip on the iris
+   page when the debug overlay is on. */
+.iris-blend-mode-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-1);
+  border: 1px solid var(--stroke-1, var(--fg-4));
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--fg-2);
+}
+.iris-blend-mode-row label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+}
+.iris-blend-mode-row select {
+  background: var(--bg-2);
+  border: 1px solid var(--stroke-1, var(--fg-4));
+  border-radius: 6px;
+  color: var(--fg-0);
+  font: inherit;
+  letter-spacing: 0;
+  text-transform: none;
+  padding: 0.2rem 0.4rem;
+}
+.iris-blend-mode-hint {
+  font-size: 10.5px;
+  color: var(--fg-3);
+}
+
+/* Sensitivity night-grid: three static images side-by-side showing the
+   same dark scene at three ISO settings. Static thumbs (no blend stack
+   gymnastics) — each <figure> is one render. */
+.iso-night-grid {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--stroke-1);
+}
+.iso-night-grid-head {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: var(--tracking-loose);
+  text-transform: uppercase;
+  color: var(--fg-2);
+  margin-bottom: var(--space-3);
+}
+.iso-night-grid-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+}
+@media (max-width: 720px) {
+  .iso-night-grid-tiles { grid-template-columns: 1fr; }
+}
+.iso-night-tile {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-1);
+  border: 1px solid var(--stroke-1, var(--fg-4));
+  border-radius: 8px;
+  padding: var(--space-3);
+  margin: 0;
+}
+.iso-night-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: var(--tracking-loose);
+  text-transform: uppercase;
+  color: var(--fg-0);
+  margin: 0 0 var(--space-2);
+}
+.iso-night-img {
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  background: #000;
+  border-radius: 4px;
+  margin-bottom: var(--space-2);
+  display: block;
+}
+.iso-night-meta {
+  font-size: 11px;
+  color: var(--fg-3);
+  line-height: 1.4;
+  margin: 0;
+}
+.hdr-debug-knob select {
+  background: var(--bg-2);
+  border: 1px solid var(--stroke-1, var(--fg-4));
+  border-radius: 6px;
+  color: var(--fg-0);
+  font: inherit;
+  letter-spacing: 0;
+  text-transform: none;
+  padding: 0.2rem 0.4rem;
+}
+
+/* HDR test harness — diagnostic page only (/hdr-test). */
+.hdr-test-controls {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--stroke-1, var(--fg-4));
+  border-radius: 12px;
+  background: var(--bg-1);
+  margin-bottom: var(--space-4);
+}
+.hdr-test-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--space-4);
+}
+.hdr-test-tile {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-1);
+  border: 1px solid var(--stroke-1, var(--fg-4));
+  border-radius: 8px;
+  padding: var(--space-3);
+}
+.hdr-test-tile h3 {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: var(--tracking-loose);
+  text-transform: uppercase;
+  color: var(--fg-0);
+  margin: 0 0 0.25rem;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.hdr-test-tile h3:active { cursor: grabbing; }
+.hdr-test-ghost {
+  opacity: 0.35;
+  background: var(--bg-2);
+}
+.hdr-test-chosen {
+  box-shadow: 0 0 0 2px var(--amber-400);
+}
+.hdr-test-tile h3 code {
+  font-size: inherit;
+  color: var(--amber-400);
+  background: none;
+  padding: 0;
+}
+.hdr-test-tile .meta {
+  font-size: 11px;
+  color: var(--fg-3);
+  line-height: 1.4;
+  margin: 0 0 var(--space-2);
+}
+.hdr-test-tile .meta::after {
+  content: attr(data-actual);
+  display: block;
+  color: var(--amber-400);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: var(--tracking-loose);
+  margin-top: 0.25rem;
+}
+.hdr-test-tile img,
+.hdr-test-tile canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #000;
+  border-radius: 4px;
+}
+.hdr-test-grid.natural-size .hdr-test-tile img,
+.hdr-test-grid.natural-size .hdr-test-tile canvas {
+  width: auto;
+  max-width: none;
+}
+
+/* ============================================================
+   LESSON
+   ============================================================ */
+.technical-term {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: var(--tracking-loose);
+  color: var(--fg-3);
+  text-transform: uppercase;
+}
+.technical-term.faded { color: var(--fg-4); }
+
+.lesson-body {
+  max-width: 640px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--fg-1);
+}
+.lesson-body p { margin: 0 0 14px; }
+.lesson-body strong { color: var(--fg-0); font-weight: 600; }
+.lesson-body em { color: var(--fg-0); font-style: italic; }
+
+.scene-caption {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--fg-3);
+  line-height: var(--leading-snug);
+  max-width: 640px;
+}
+
+.showcase-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin: var(--space-5) 0;
 }
 .showcase-card {
-  flex: 1 1 220px;
-  max-width: 340px;
-  text-align: center;
+  background: var(--bg-1);
+  border: 1px solid var(--stroke-2);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-plate);
 }
 .showcase-card img {
   width: 100%;
-  height: auto;
-  border-radius: 6px;
+  aspect-ratio: 4/3;
+  object-fit: cover;
   display: block;
 }
-.showcase-card .showcase-label {
-  font-size: 0.9rem;
-  color: #ccc;
-  margin-top: 0.4rem;
+.showcase-label {
+  padding: 10px 14px;
+  font-size: 12.5px;
+  color: var(--fg-2);
+  border-top: 1px solid var(--stroke-1);
+  font-family: var(--font-body);
+  text-align: center;
 }
 
-/* ─── Reference card polish ──────────────────────────────────────────── */
-.ref-table {
-  font-size: 0.85rem;
+/* Drum — iris control. Reticle stays centered; labels translate under it.
+   Dot size scales with aperture open-ness (wider = bigger dot). */
+.drum {
+  background: var(--bg-1);
+  border: 1px solid var(--stroke-2);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px 14px;
+  box-shadow: var(--shadow-plate);
+  margin: var(--space-4) 0;
+  position: relative;
+  user-select: none;
 }
-.ref-table th,
-.ref-table td {
-  color: #e0e0e0;
-  vertical-align: middle;
-}
-.ref-table th {
-  font-weight: 600;
-  font-size: 0.82rem;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: #cfcfcf;
-}
-.ref-table .small,
-.ref-table .text-muted {
-  color: #c0c0c0 !important;
-  font-size: 0.78rem;
-}
-.ref-table .icon { font-size: 1rem; }
-/* Override Bootstrap table-dark muted defaults for legibility. */
-.table-dark {
-  --bs-table-color: #e0e0e0;
-  --bs-table-striped-color: #e0e0e0;
-  --bs-table-bg: #1a1a1a;
-  --bs-table-striped-bg: #202020;
-  --bs-table-border-color: #2e2e2e;
-}
-
-/* ─── Page nav (Previous / Advance) ──────────────────────────────────── */
-.page-nav {
+.drum-head {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-top: 1.5rem;
-  gap: 1rem;
+  align-items: baseline;
+  margin-bottom: 12px;
+  gap: var(--space-3);
 }
-.page-nav .nav-form { margin: 0; }
-.page-nav .nav-spacer { display: inline-block; }
-
-/* ─── Chapter nav (top of every flow page) ───────────────────────────── */
-/* Styled as a dim progress bar rather than a primary nav. Each chapter is
-   a thin segment with a bottom border that fills in as the user
-   progresses. Still clickable for back-navigation. */
-.chapter-nav {
-  margin-bottom: 1.25rem;
-  flex-shrink: 0;
+.drum-viewport {
+  position: relative;
+  height: 64px;
+  background: var(--bg-0);
+  border: 1px solid var(--stroke-1);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-well);
+  overflow: hidden;
+  cursor: grab;
+  touch-action: pan-y;
 }
-.chapter-list {
+.drum-viewport.is-dragging { cursor: grabbing; }
+.drum-strip {
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 50%;              /* first label would sit centered; JS adjusts */
   display: flex;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  gap: 4px;
-  font-size: 0.7rem;
+  align-items: center;
+  gap: 0;
+  will-change: transform;
+  transform: translateX(0);
 }
-.chapter-item {
+/* JS toggles .snapping for the release animation; during drag it's raw.
+   Duration matches attachSnapSlider's rAF (220ms) so the strip and the
+   image blend land at the same moment. */
+.drum-strip.snapping {
+  transition: transform var(--dur-base) var(--ease-iris);
+}
+.drum-label {
+  flex: 0 0 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  text-align: center;
+  color: var(--fg-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  transition: color var(--dur-fast) var(--ease-standard);
+}
+.drum-text {
+  display: block;
+  width: 100%;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-style: italic;
+  color: var(--fg-2);
+  letter-spacing: 0;
+}
+.drum-label.active .drum-text { color: var(--fg-0); }
+.drum-label.active {
+  color: var(--fg-0);
+}
+.drum-dot {
+  display: block;
+  width: var(--dot-size, 8px);
+  height: var(--dot-size, 8px);
+  background: var(--fg-2);
+  border-radius: 50%;
+  transition: background var(--dur-base) var(--ease-standard),
+              box-shadow var(--dur-base) var(--ease-standard);
+}
+.drum-label.active .drum-dot {
+  background: var(--fg-0);
+  box-shadow: 0 0 6px rgba(244, 241, 234, 0.45);
+}
+/* Small amber arrowhead anchored to the viewport's bottom edge, pointing UP
+   into the active label. Sits below the label text so it never intersects
+   multi-character f-stops. The bottom offset clears the drum's bottom
+   padding (14px) + drum-labels line (~12px) + its margin-top (8px). */
+.drum-reticle {
+  position: absolute;
+  left: 50%;
+  bottom: calc(14px + 12px + 8px);
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 8px solid var(--amber-400);
+  filter: drop-shadow(0 0 4px var(--amber-glow));
+  pointer-events: none;
+  z-index: 2;
+}
+.drum-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg-3);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+.drum:focus-visible .drum-viewport { box-shadow: var(--shadow-well), var(--shadow-focus-ring); }
+
+/* Crossfade image swap between discrete frames. Two stacked <img>s sit
+   inside an .image-stack; JS sets the hidden slot's src to the new frame,
+   waits for it to load, then flips data-showing so the stack crossfades. */
+.image-stack {
+  position: relative;
+  aspect-ratio: 16/9;
+  background: var(--bg-1);
+}
+.image-stack .slider-image,
+.image-stack .slider-image-shadow,
+.image-stack .toggle-image,
+.image-stack .toggle-image-shadow {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: opacity var(--dur-slow) var(--ease-standard);
+}
+/* The shadow slot is decorative (crossfade/blend support). It sits on
+   top in DOM order and was intercepting pointer events — clicks
+   couldn't reach the primary slot, breaking the fullscreen preview's
+   click target. Route pointer events to the primary slot only. */
+.image-stack .slider-image-shadow,
+.image-stack .toggle-image-shadow {
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+.image-stack img[data-slot="a"] { opacity: 1; z-index: 2; }
+.image-stack img[data-slot="b"] { opacity: 0; z-index: 1; }
+.image-stack[data-showing="b"] img[data-slot="a"] { opacity: 0; z-index: 1; }
+.image-stack[data-showing="b"] img[data-slot="b"] { opacity: 1; z-index: 2; }
+
+/* Blend mode (iris) — two swappable variants, picked from the debug
+   menu (data-iris-blend-mode-select). Both are GPU-accelerated.
+
+   data-mode="blend" — alpha (default)
+     Standard CSS alpha compositing in sRGB working space. Slot B sits
+     above slot A; opacity on slot B drives the crossfade while slot A
+     stays fully opaque underneath. JS keeps slot A's αA = 1 (NOT 1-frac)
+     to avoid the (1-frac)² double-attenuation artifact that earlier
+     made the midfade visibly dark — see HDR_PIPELINE.md for the math.
+
+   data-mode="snap" — no blend
+     Slot B is hidden; slot A's src is rewritten to the nearest integer
+     frame on every input. Zero compositing cost. */
+.image-stack[data-mode="blend"],
+.image-stack[data-mode="snap"] {
+  background: #000;
+}
+.image-stack[data-mode="blend"] img {
+  z-index: auto;
+}
+.image-stack[data-mode="blend"] img[data-slot="a"] { z-index: 1; }
+.image-stack[data-mode="blend"] img[data-slot="b"] { z-index: 2; }
+.image-stack[data-mode="snap"] img[data-slot="b"] {
+  display: none;
+}
+
+/* Shutter controls — tuner + dial side-by-side on lesson 3. */
+.shutter-controls {
+  display: flex;
+  gap: var(--space-4);
+  align-items: stretch;
+  margin: var(--space-4) 0;
+}
+.shutter-controls .shutter-tuner { flex: 1 1 auto; margin: 0; }
+.shutter-controls .shutter-dial-row { flex: 0 0 auto; margin: 0; padding-top: 4px; }
+@media (max-width: 640px) {
+  .shutter-controls { flex-direction: column; }
+}
+
+/* Screen-reader-only (hides the native range input that the tuner drives) */
+.sr-only {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0,0,0,0);
+  white-space: nowrap; border: 0;
+}
+
+/* Tuner — tick-strip slider with amber needle */
+.tuner {
+  background: var(--bg-1);
+  border: 1px solid var(--stroke-2);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px 14px;
+  box-shadow: var(--shadow-plate);
+  margin: var(--space-4) 0 var(--space-4);
+}
+.tuner-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+  gap: var(--space-3);
+}
+.label-plate {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: var(--tracking-loose);
+  color: var(--fg-3);
+  text-transform: uppercase;
+}
+.tuner-read {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--text-xl);
+  color: var(--fg-0);
+  line-height: 1;
+  text-align: right;
+}
+.tuner-strip {
+  position: relative;
+  height: 48px;
+  background: var(--bg-0);
+  border: 1px solid var(--stroke-1);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-well);
+  overflow: hidden;
+  cursor: pointer;
+  touch-action: none;
+}
+.tuner-strip:focus-visible {
+  box-shadow: var(--shadow-well), var(--shadow-focus-ring);
+}
+.tuner-ticks {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  pointer-events: none;
+}
+.tuner-tick {
+  width: 1px;
+  height: 10px;
+  background: var(--fg-4);
+}
+.tuner-tick.major {
+  height: 22px;
+  background: var(--fg-3);
+}
+.tuner-needle {
+  position: absolute;
+  top: 4px; bottom: 4px;
+  width: 2px;
+  background: var(--amber-400);
+  left: 50%;
+  transform: translateX(-1px);
+  box-shadow: 0 0 8px var(--amber-glow), 0 0 16px var(--amber-glow);
+  pointer-events: none;
+  /* No CSS transition: the snap animation runs in JS via rAF against
+     the hidden slider-input. Transitions here caused a perceived lag
+     during drag because the needle chased input events instead of
+     tracking the cursor. */
+}
+.tuner-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg-3);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+/* ============================================================
+   CONTROL VIZ — top-right overlay on each lesson's hero image.
+   Animates in response to the current control (slider/tuner/toggle/dial).
+   ============================================================ */
+.slider-viewer,
+.toggle-viewer {
+  position: relative;
+}
+.control-viz {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 84px;
+  height: 84px;
+  background: rgba(11, 11, 12, 0.65);
+  border: 1px solid var(--stroke-2);
+  border-radius: var(--radius-md);
+  padding: 8px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: var(--shadow-plate);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Iris blades — pupil scales with --iris-open (0 = closed, 1 = wide).
+   Direct-parented to the control's fractional value: each pointer/input
+   tick re-writes --iris-open, and CSS computes the transform from that
+   value with no `transition`. Smooth animation lives in
+   `easeInputTo` (static/js/app.js) which advances input.value via rAF,
+   so discrete keyboard steps + clicks still look continuous without the
+   viz visually chasing the control. Prior behavior (CSS `transition` on
+   transform) made the blades ease *toward* the value — fixed 2026-04-23
+   per roadmap item #5. */
+.control-viz--iris svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.iris-barrel { fill: #0f0f12; stroke: var(--stroke-3); stroke-width: 0.8; }
+.iris-blade {
+  fill: var(--bg-3);
+  stroke: #0b0b0c;
+  stroke-width: 0.5;
+  stroke-linejoin: miter;
+}
+/* Real iris diaphragms rotate the blade carrier as the aperture moves.
+   Small twist (~18°) across the full open→closed range sells the motion
+   without making the fixed blade radial positions look obviously wrong.
+   The CSS `transform` REPLACES the SVG presentation attribute
+   `transform="translate(50 50)"`, so we re-include the translate here. */
+.iris-blades {
+  transform: translate(50px, 50px) rotate(calc((1 - var(--iris-open, 0.5)) * -18deg));
+}
+.iris-pupil-group {
+  transform-origin: 50px 50px;
+  /* Open extreme = scale 2.50: pupil hex vertices reach radius 25 (well
+     past the blade inner edge at radius ~12), so wide-open reads as
+     "blades retracted, lens barrel almost fully exposed". The 0.15→2.50
+     range gives an area ratio of ~278×, matching the real f/1.4 → f/22
+     area ratio (~247×). Earlier 0.15→1.00 capped the pupil at vertex
+     radius 10 — pupil never even reached the blade ring, so the
+     wide-open state looked like a half-closed iris. */
+  transform: scale(calc(0.15 + var(--iris-open, 0.5) * 2.35));
+}
+.iris-pupil {
+  fill: var(--amber-300);
+  stroke: var(--amber-500);
+  stroke-width: 0.4;
+  filter: drop-shadow(0 0 3px var(--amber-glow));
+}
+
+/* Shutter — horizontal curtains reveal a slit; slit height = --shutter-open (0 closed → 1 fully open). */
+.control-viz--shutter {
+  padding: 6px;
+}
+.shutter-frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-0);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--stroke-1);
+}
+.shutter-curtain {
+  background: #0a0a0d;
+  flex: 0 0 auto;
+  height: calc((1 - var(--shutter-open, 0.3)) / 2 * 100%);
+  transition: height var(--dur-base) var(--ease-shutter);
+  box-shadow: 0 0 4px rgba(0,0,0,0.6);
+}
+.shutter-slit {
+  flex: 1 1 auto;
+  /* Fill hue shifts with duration: short = amber-hot, long = meter-cyan */
+  background: color-mix(in srgb,
+    var(--meter-red) calc((1 - var(--shutter-open, 0.3)) * 60%),
+    var(--amber-300) calc(var(--shutter-open, 0.3) * 100%));
+  box-shadow: 0 0 8px var(--amber-glow) inset;
+  transition: background var(--dur-slow) var(--ease-iris);
+}
+
+/* ISO — heat + grain: --iso-heat 0 (cool, clean) → 1 (hot, noisy). */
+.control-viz--iso {
+  padding: 6px;
+}
+.iso-sensor {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--stroke-1);
+  background: color-mix(in srgb,
+    var(--bg-3) calc((1 - var(--iso-heat, 0.5)) * 100%),
+    var(--amber-300) calc(var(--iso-heat, 0.5) * 100%));
+  transition: background var(--dur-base) var(--ease-standard);
+}
+.iso-grain {
+  position: absolute;
+  inset: 0;
+  opacity: calc(var(--iso-heat, 0.5) * 0.75);
+  background-image:
+    radial-gradient(circle at 22% 18%, rgba(255,255,255,0.35) 0.4px, transparent 1px),
+    radial-gradient(circle at 71% 42%, rgba(0,0,0,0.5) 0.4px, transparent 1px),
+    radial-gradient(circle at 45% 78%, rgba(255,255,255,0.25) 0.4px, transparent 1px),
+    radial-gradient(circle at 88% 86%, rgba(0,0,0,0.5) 0.4px, transparent 1px),
+    radial-gradient(circle at 12% 60%, rgba(0,0,0,0.45) 0.4px, transparent 1px);
+  background-size: 8px 8px, 10px 10px, 6px 6px, 9px 9px, 7px 7px;
+  mix-blend-mode: overlay;
+  transition: opacity var(--dur-base) var(--ease-standard);
+}
+
+/* ============================================================
+   DIAL — rotary control (components-dial.html)
+   ============================================================ */
+.dial-row {
+  display: flex;
+  gap: var(--space-5);
+  align-items: center;
+  justify-content: center;
+  margin: var(--space-5) 0;
+  flex-wrap: wrap;
+}
+.dial-cell { text-align: center; }
+.dial {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 28%, #34343a 0%, #1c1c1f 60%, #141416 100%);
+  border: 1px solid var(--stroke-3);
+  box-shadow: var(--shadow-button), 0 0 0 4px var(--bg-0) inset;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+}
+.dial::before {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  border-radius: 50%;
+  border: 1px dashed var(--stroke-2);
+  pointer-events: none;
+}
+.dial-readout {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--fg-0);
+  pointer-events: none;
+}
+.dial-indicator {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  width: 2px;
+  height: 14px;
+  background: var(--amber-400);
+  transform-origin: 50% 49px;
+  box-shadow: 0 0 6px var(--amber-glow);
+  /* Direct-parented to the control's fractional value (same pattern as
+     the iris viz — G4 #5, extended here 2026-04-23). Removing the
+     `transition` means the indicator tracks the tuner's fractional
+     `input.value` exactly, with no chase-the-value lag. Discrete dial
+     clicks still animate smoothly because `easeInputTo` writes the
+     target input on every rAF tick; each tick fires the `input` event,
+     `initDial`'s sync listener rotates the indicator, and the
+     fractional path ticks cleanly across the angle range. */
+  pointer-events: none;
+}
+.dial-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: var(--tracking-loose);
+  text-transform: uppercase;
+  color: var(--fg-3);
+  text-align: center;
+  margin-top: 8px;
+}
+.dial:hover { border-color: var(--stroke-3); }
+.dial:focus-visible { box-shadow: var(--shadow-button), 0 0 0 4px var(--bg-0) inset, var(--shadow-focus-ring); outline: none; }
+.dial.is-active .dial-indicator { background: var(--amber-300); box-shadow: 0 0 10px var(--amber-glow); }
+
+/* Top-right lesson plate — technical term + matching concept icon, baseline-aligned */
+.lesson-plate {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+  color: var(--fg-3);
+}
+.lesson-plate .technical-term {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: var(--tracking-loose);
+  color: var(--fg-3);
+  text-transform: uppercase;
+}
+.lesson-plate-icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--fg-3);
+}
+.lesson-plate-icon .icon-svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Etymology note — small italic-serif aside at the bottom of a lesson.
+   Used by the iris lesson to mark the aperture / apertus distinction. */
+.lesson-etymology {
+  margin: var(--space-7) 0 var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--stroke-1);
+  max-width: 640px;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: var(--text-md);
+  color: var(--fg-2);
+  line-height: var(--leading-snug);
+}
+.lesson-etymology strong {
+  font-style: normal;
+  color: var(--amber-300);
+  font-weight: 500;
+}
+.lesson-etymology em {
+  color: var(--fg-0);
+}
+
+/* Reserved between Previous/Advance for the user-authored iris animation */
+.page-nav-iris {
+  flex: 0 1 auto;
+  min-width: 48px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Slider "tuner" */
+.slider-viewer {
+  background: var(--bg-1);
+  border: 1px solid var(--stroke-2);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  margin: var(--space-5) 0 0;
+}
+.slider-image {
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  display: block;
+  transition: opacity var(--dur-slow) var(--ease-iris);
+}
+.slider-label {
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--fg-1);
+  padding: 12px 16px;
+  border-top: 1px solid var(--stroke-1);
+  background: var(--bg-1);
+  margin: 0 0 var(--space-4);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  border: 1px solid var(--stroke-2);
+  border-top: 0;
+  letter-spacing: 0.02em;
+}
+.slider-row {
+  background: var(--bg-2);
+  border: 1px solid var(--stroke-2);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  box-shadow: var(--shadow-plate);
+  margin-bottom: var(--space-4);
+}
+.slider-row .small, .slider-row .text-muted {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-3) !important;
+}
+.slider-row input[type="range"] {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 24px;
+  background: transparent;
+  cursor: pointer;
+}
+.slider-row input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  background: var(--bg-0);
+  border: 1px solid var(--stroke-1);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-well);
+}
+.slider-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px; height: 16px;
+  margin-top: -7px;
+  border-radius: 50%;
+  background: var(--amber-400);
+  border: 2px solid var(--bg-2);
+  box-shadow: 0 0 10px var(--amber-glow);
+  cursor: grab;
+}
+.slider-row input[type="range"]::-moz-range-track {
+  height: 4px;
+  background: var(--bg-0);
+  border: 1px solid var(--stroke-1);
+  border-radius: var(--radius-md);
+}
+.slider-row input[type="range"]::-moz-range-thumb {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--amber-400);
+  border: 2px solid var(--bg-2);
+  box-shadow: 0 0 10px var(--amber-glow);
+  cursor: grab;
+}
+
+/* Toggle group */
+.toggle-viewer {
+  background: var(--bg-1);
+  border: 1px solid var(--stroke-2);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  margin: var(--space-5) 0 0;
+}
+.toggle-image {
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  display: block;
+  transition: opacity var(--dur-slow) var(--ease-iris);
+}
+.toggle-label {
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--fg-1);
+  padding: 12px 16px;
+  border-top: 1px solid var(--stroke-1);
+  background: var(--bg-1);
+  margin: 0 0 var(--space-4);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  border: 1px solid var(--stroke-2);
+  border-top: 0;
+  letter-spacing: 0.02em;
+}
+.toggle-group {
+  display: flex !important;
+  justify-content: center;
+  gap: 0;
+  margin: 14px auto var(--space-4);
+  width: fit-content;
+}
+.toggle-btn, .toggle-btn.btn, .toggle-btn.btn-outline-primary {
+  font-family: var(--font-mono) !important;
+  font-size: 11px !important;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-2) !important;
+  background: var(--bg-2) !important;
+  border: 1px solid var(--stroke-2) !important;
+  padding: 9px 20px !important;
+  box-shadow: none !important;
+  border-radius: 0;
+  font-weight: 500;
+}
+.toggle-btn:first-child { border-radius: var(--radius-md) 0 0 var(--radius-md); }
+.toggle-btn:last-child  { border-radius: 0 var(--radius-md) var(--radius-md) 0; }
+.toggle-btn:not(:first-child) { border-left: none !important; }
+.toggle-btn:hover {
+  color: var(--fg-1) !important;
+  background: var(--bg-3) !important;
+}
+.toggle-btn.active {
+  color: var(--fg-0) !important;
+  background: var(--bg-3) !important;
+  box-shadow: var(--shadow-well) !important;
+}
+
+/* Compare slider */
+.compare-viewer {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--stroke-2);
+  box-shadow: var(--shadow-card);
+  cursor: ew-resize;
+  user-select: none;
+  margin: var(--space-5) 0 var(--space-3);
+  background: var(--bg-1);
+  /* Touch drags on this widget are horizontal scrubs; tell the browser
+     to route the whole gesture to JS (pointer events) instead of
+     hijacking it as a page scroll. Without this the browser cancels
+     the drag partway through on touch devices. */
+  touch-action: none;
+}
+.compare-base, .compare-overlay {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  /* Route pointer events to .compare-viewer's drag handler. Without this,
+     the browser's native HTML5 image-drag kicks in after the first
+     pointermove and cancels the pointer stream mid-drag (regression
+     introduced during the Aperture design port). */
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+.compare-handle {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 2px;
+  background: var(--amber-400);
+  box-shadow: 0 0 12px var(--amber-glow);
+  transform: translateX(-1px);
+  pointer-events: none;
+}
+.compare-handle::after {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--bg-2);
+  border: 1px solid var(--amber-400);
+  box-shadow: 0 0 12px var(--amber-glow);
+}
+.compare-label {
+  position: absolute; top: 14px;
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 5px 10px;
+  background: rgba(11,11,12,0.7);
+  border: 1px solid var(--stroke-2);
+  border-radius: var(--radius-sm);
+  color: var(--fg-1);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  /* Labels are decorative; routing pointer events through them to the
+     viewer's drag handler. Same class of regression that killed the
+     image-stack shadow slot (G4 #1, #6). */
+  pointer-events: none;
+}
+.compare-label-left { left: 14px; }
+.compare-label-right { right: 14px; }
+
+/* Bottom-hang modifier — the sensitivity A/B compare slide docks the
+   viewer to the viewport bottom and lets the lower portion hang past
+   the visible fold, so the dark scene bleeds into the page edge.
+   Same on desktop and mobile. Drag still works through the visible
+   area; the clipped portion is purely visual.
+
+   `position: fixed` pins to the viewport bottom; `bottom: -14vh` puts
+   14vh below the fold so the image reliably "hangs off." `height: 60vh`
+   leaves room above for the lesson title + subtitle. */
+/* `.compare-viewer--bottom-hang` (position: fixed; bottom: -14vh; full
+   viewport width; spacer ::after on .slide-content) was removed —
+   the bleed-off-the-edge effect read as broken once the chapter nav,
+   page nav, and surrounding lesson chrome had moved on. The compare
+   now sits in normal flow under .compare-viewer. */
+
+/* ============================================================
+   QUIZ
+   ============================================================ */
+.quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: var(--space-5);
+}
+
+/* ============================================================
+   QUIZ SPACING — looser vertical rhythm so scenario, prompt,
+   options, and feedback each get room to breathe. Scoped to
+   /quiz/* via :has(#quiz-form). !important is required to win
+   over Bootstrap utility classes (mb-3, mt-3) which already
+   carry !important. .page-nav is `position: fixed` so the
+   bumped margin is harmless on it.
+   ============================================================ */
+.slide-content:has(#quiz-form) > * {
+  margin-bottom: var(--space-5) !important;
+}
+.slide-content:has(#quiz-form) > .lead {
+  margin-bottom: var(--space-5);
+}
+.slide-content:has(#quiz-form) .quiz-feedback {
+  margin-top: var(--space-5) !important;
+}
+.quiz-options.d-grid { display: grid; }
+.quiz-option,
+.btn.quiz-option,
+.btn.btn-outline-primary.quiz-option {
+  text-align: left;
+  background: var(--bg-2) !important;
+  border: 1px solid var(--stroke-2) !important;
+  border-radius: var(--radius-md) !important;
+  padding: 14px 18px !important;
+  color: var(--fg-1) !important;
+  font-family: var(--font-body) !important;
+  font-size: 14px !important;
+  box-shadow: var(--shadow-plate) !important;
+  transition: background var(--dur-fast) var(--ease-standard),
+              border-color var(--dur-base) var(--ease-standard);
+  font-weight: 400;
+}
+.quiz-option:hover:not(:disabled) {
+  background: var(--bg-3) !important;
+  border-color: var(--stroke-3) !important;
+  color: var(--fg-0) !important;
+}
+.quiz-option:disabled { cursor: default; opacity: 0.75; }
+.quiz-option.correct,
+.btn.quiz-option.correct {
+  border-color: var(--meter-green) !important;
+  background: var(--meter-green-bg) !important;
+  color: var(--fg-0) !important;
+  box-shadow: 0 0 0 1px var(--meter-green), var(--shadow-plate) !important;
+}
+.quiz-option.incorrect,
+.btn.quiz-option.incorrect {
+  border-color: var(--meter-red) !important;
+  background: var(--meter-red-bg) !important;
+  color: var(--fg-0) !important;
+}
+.quiz-option.disabled-wrong,
+.btn.quiz-option.disabled-wrong {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Structured option with icon (2026-04-23 — low-difficulty quiz
+   variants render a concept icon next to the text; higher-difficulty
+   variants stay icon-free). The icon sits inline with the text; the
+   button's height / padding / font-size are unchanged so mixed
+   icon+iconless options can coexist in the same list without any row
+   misalignment. */
+.quiz-option { /* base class already styled above; add flex layout
+                  hooks so the icon + text share a row cleanly. */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  /* Reserve a uniform row height so iconed + iconless options in the
+     same list don't misalign. Taller of the two wins; 50 px accounts
+     for the 20 px icon + the button's existing vertical padding. */
+  min-height: 50px;
+}
+.quiz-option-icon {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--amber-300);
+}
+.quiz-option-icon svg {
+  width: 100%;
+  height: 100%;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.75;
+}
+.quiz-option-text {
   flex: 1 1 auto;
   min-width: 0;
 }
-.chapter-item a {
-  display: block;
-  padding: 0.35rem 0.4rem 0.45rem;
-  color: #555;
-  text-decoration: none;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  border-bottom: 2px solid #242424;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  position: relative;
-  transition: color 180ms ease;
-}
-/* Progress-bar fill-in: the underline is a zero-width bar that sweeps
-   left→right when .chapter-nav is marked .progressed (added via JS on
-   mount). The per-item --chapter-delay from the template staggers the
-   sweep so passed chapters "fill in" one after another. */
-.chapter-item a::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 100%;
-  bottom: -2px;
-  height: 2px;
-  background: transparent;
-  transition: right 520ms ease-out;
-  transition-delay: var(--chapter-delay, 0ms);
-}
-.chapter-nav.progressed .chapter-item.passed a::after,
-.chapter-nav.progressed .chapter-item.active a::after {
-  right: 0;
-}
-.chapter-item.passed a::after { background: #5e5e5e; }
-.chapter-item.active a::after { background: var(--accent); }
-.chapter-item.passed a { color: #8a8a8a; }
-.chapter-item.active a {
-  color: #f0f0f0;
-  font-weight: 500;
-}
-.chapter-item a:hover { color: #ddd; }
-.chapter-item.upcoming a:hover::after {
-  right: 70%;
-  background: #3a3a3a;
-}
-@media (prefers-reduced-motion: reduce) {
-  .chapter-item a::after { transition: none; transition-delay: 0s; }
-}
-.chapter-nav.progressed-instant .chapter-item a::after {
-  transition: none;
-  transition-delay: 0s;
+/* Reserve the icon column even when an option has no icon, so
+   icon+iconless options in the same list still left-align on the
+   text. `.quiz-option--with-icon` is added when opt.icon is set. */
+.quiz-option:not(.quiz-option--with-icon) .quiz-option-text {
+  margin-left: 0;
 }
 
-/* ─── Paragraph reveal (Brilliant-style cascade on page enter) ───────── */
-/* Direct children of .slide-content start hidden, fade in on a staggered
-   delay set via --reveal-delay. Any user input (pointerdown / keydown /
-   scroll) flips the shell to .reveal-skip, which drops the delay to 0
-   and makes the remaining blocks snap in. */
+.image-quiz-options {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px !important;
+  margin-bottom: var(--space-4);
+  justify-content: stretch !important;
+}
+.image-quiz-option,
+.btn.image-quiz-option,
+.btn.btn-outline-primary.image-quiz-option {
+  background: var(--bg-1) !important;
+  border: 1px solid var(--stroke-2) !important;
+  border-radius: var(--radius-lg) !important;
+  padding: 0 !important;
+  overflow: hidden;
+  box-shadow: var(--shadow-plate) !important;
+  color: var(--fg-1) !important;
+  text-align: left;
+  transition: border-color var(--dur-base) var(--ease-standard);
+}
+.image-quiz-option:hover:not(:disabled) {
+  border-color: var(--stroke-3) !important;
+}
+.image-quiz-img {
+  width: 100%;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  display: block;
+}
+.image-quiz-label {
+  padding: 12px 14px 4px;
+  font-size: 13px;
+  line-height: var(--leading-snug);
+  color: var(--fg-1);
+}
+.image-quiz-credit {
+  padding: 0 14px 12px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg-3);
+  letter-spacing: 0.04em;
+}
+.image-quiz-option.correct,
+.btn.image-quiz-option.correct {
+  border-color: var(--meter-green) !important;
+  box-shadow: 0 0 0 1px var(--meter-green), var(--shadow-card) !important;
+}
+.image-quiz-option.correct .image-quiz-label { color: var(--meter-green); }
+.image-quiz-option.incorrect,
+.btn.image-quiz-option.incorrect { border-color: var(--meter-red) !important; }
+.image-quiz-option.disabled-wrong { opacity: 0.5; }
+
+/* Quiz feedback block */
+.quiz-feedback {
+  margin-top: var(--space-4);
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13.5px;
+  line-height: var(--leading-body);
+  border: 1px solid var(--stroke-2);
+  background: var(--bg-1);
+}
+.quiz-feedback > * { margin: 0; }
+.quiz-feedback .text-success {
+  color: var(--meter-green) !important;
+}
+.quiz-feedback .text-warning {
+  color: var(--amber-300) !important;
+}
+.quiz-feedback .text-danger {
+  color: var(--meter-red) !important;
+}
+
+/* Quiz header strip */
+.d-flex.justify-content-between .text-muted {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-3) !important;
+}
+
+/* Bootstrap alert recolor */
+.alert {
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  font-size: 13px;
+  line-height: var(--leading-body);
+}
+.alert-warning.bg-transparent {
+  background: var(--amber-glow) !important;
+  border: 1px solid var(--amber-500) !important;
+  color: var(--amber-300) !important;
+}
+.alert-warning strong { color: var(--fg-0); }
+.alert-secondary {
+  background: var(--bg-1) !important;
+  border: 1px solid var(--stroke-2) !important;
+  color: var(--fg-2) !important;
+}
+.alert-secondary strong { color: var(--fg-0); }
+
+/* Badges */
+.badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border-radius: var(--radius-sm);
+  padding: 3px 8px;
+}
+.badge.bg-warning.text-dark {
+  background: var(--amber-glow) !important;
+  color: var(--amber-300) !important;
+  border: 1px solid var(--amber-500);
+}
+.badge.bg-success {
+  background: var(--meter-green-bg) !important;
+  color: var(--meter-green) !important;
+  border: 1px solid var(--meter-green);
+}
+.badge.bg-danger {
+  background: var(--meter-red-bg) !important;
+  color: var(--meter-red) !important;
+  border: 1px solid var(--meter-red);
+}
+.badge.bg-secondary {
+  background: var(--bg-3) !important;
+  color: var(--fg-2) !important;
+  border: 1px solid var(--stroke-2);
+}
+
+/* ============================================================
+   RESULT
+   ============================================================ */
+.display-6 {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: 80px;
+  color: var(--amber-300);
+  line-height: 1;
+  margin: var(--space-4) 0 var(--space-1);
+}
+.list-group {
+  border-top: 1px solid var(--stroke-1);
+  border-radius: 0;
+  overflow: visible;
+}
+.list-group-item {
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--stroke-1) !important;
+  padding: 12px 4px;
+  color: var(--fg-1) !important;
+  font-size: 13.5px;
+  font-family: var(--font-body);
+}
+.list-group-item span:first-child {
+  color: var(--fg-2);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ============================================================
+   REFERENCE TABLE
+   ============================================================ */
+.table-responsive { overflow-x: auto; }
+table.ref-table,
+table.table.ref-table,
+table.table-dark.table-striped.ref-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--space-5) 0;
+  font-size: 13.5px;
+  color: var(--fg-1);
+  background: transparent !important;
+  --bs-table-bg: transparent;
+  --bs-table-striped-bg: transparent;
+  --bs-table-color: var(--fg-1);
+}
+table.ref-table th {
+  text-align: left;
+  padding: 12px 14px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-3) !important;
+  font-weight: 500;
+  background: transparent !important;
+  border-bottom: 1px solid var(--stroke-2) !important;
+  border-top: 0 !important;
+}
+table.ref-table td {
+  padding: 16px 14px;
+  border-bottom: 1px solid var(--stroke-1) !important;
+  border-top: 0 !important;
+  color: var(--fg-1) !important;
+  vertical-align: top;
+  background: transparent !important;
+}
+table.ref-table strong { color: var(--fg-0); font-weight: 600; }
+table.ref-table .icon {
+  color: var(--fg-0);
+  margin-right: 4px;
+  font-size: 16px;
+}
+
+/* ============================================================
+   LINKS
+   ============================================================ */
+a {
+  color: var(--link);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color var(--dur-fast) var(--ease-standard),
+              border-color var(--dur-fast) var(--ease-standard);
+}
+a:hover {
+  color: var(--link-hover);
+  border-bottom-color: var(--link-hover);
+}
+a.btn { border-bottom: 0 !important; }
+a.btn:hover { border-bottom: 0; }
+
+/* Legacy lesson image cards */
+.card.bg-dark.text-light {
+  background: var(--bg-1) !important;
+  border: 1px solid var(--stroke-2);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-plate);
+}
+.card-body {
+  padding: 10px 14px !important;
+  background: transparent;
+  border-top: 1px solid var(--stroke-1);
+}
+.card-text.small {
+  color: var(--fg-2) !important;
+  font-size: 12.5px;
+}
+
+/* Common Bootstrap spacing utilities — tuned to Aperture grid */
+.py-4 { padding-top: var(--space-6) !important; padding-bottom: var(--space-6) !important; }
+.my-4 { margin-top: var(--space-6) !important; margin-bottom: var(--space-6) !important; }
+.mt-4 { margin-top: var(--space-6) !important; }
+.mt-5 { margin-top: var(--space-9) !important; }
+.mb-1 { margin-bottom: var(--space-1) !important; }
+.mb-2 { margin-bottom: var(--space-2) !important; }
+.mb-3 { margin-bottom: var(--space-3) !important; }
+.mb-4 { margin-bottom: var(--space-6) !important; }
+.text-center { text-align: center; }
+
+/* Philosophy slide (G4 item #12) — closing-note layout between the
+   Triangle summary and the first quiz. All text, no widgets. */
+.philosophy-subtitle {
+  font-style: italic;
+  color: var(--fg-2, #9a948a);
+  max-width: 48ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+.philosophy-body {
+  max-width: 60ch;
+  margin: var(--space-5, 1.5rem) auto;
+  font-family: var(--font-body, inherit);
+  font-size: 1.02rem;
+  line-height: 1.65;
+  color: var(--fg-1, #d8d2c4);
+}
+.philosophy-body p { margin-bottom: 1.1em; }
+.philosophy-body p:last-child { margin-bottom: 0; }
+.philosophy-body em { color: var(--amber-300, #eac08a); font-style: italic; }
+.philosophy-closer {
+  color: var(--amber-300, #eac08a);
+  font-family: var(--font-display, inherit);
+  font-style: italic;
+  font-size: 1.05rem;
+  letter-spacing: 0.01em;
+  max-width: 48ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+/* Why-this-site-is-dark slide — centers the SDR/HDR toggle between body
+   and closer. The toggle is inline-flex by default; this row is just the
+   centering wrapper. */
+.why-dark-toggle-row {
+  display: flex;
+  justify-content: center;
+  margin: var(--space-5, 1.5rem) 0;
+}
+
+/* Blur-to-focus text reveal (G4 item #9). `cascadeReveal` in app.js
+   sets `--reveal-delay` on each direct child of `.slide-content`, then
+   adds `.reveal-ready` on the shell. `.reveal-skip` (set on first user
+   input) snaps every element to its final state so the learner never
+   has to wait through the whole cascade.
+   Initial state: `filter: blur(6px); opacity: 0.2`. Final:
+   `filter: blur(0); opacity: 1`. Slow, one paragraph at a time. */
 .slide-content > * {
-  opacity: 0;
-  transform: translateY(6px);
-  transition: opacity 420ms ease-out, transform 420ms ease-out;
-  transition-delay: var(--reveal-delay, 0ms);
-  will-change: opacity, transform;
+  filter: blur(6px);
+  opacity: 0.2;
+  transition:
+    filter 720ms var(--ease-standard, ease) var(--reveal-delay, 0ms),
+    opacity 720ms var(--ease-standard, ease) var(--reveal-delay, 0ms);
 }
 .slide-content.reveal-ready > * {
+  filter: blur(0);
   opacity: 1;
-  transform: none;
 }
 .slide-content.reveal-skip > * {
   transition: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .slide-content > * { filter: none; opacity: 1; transition: none; }
+}
+
+/* Fullscreen image preview modal (G4 item #6). Injected on demand by
+   initImagePreview in app.js; always a single instance. */
+.image-preview-modal[hidden] { display: none; }
+.image-preview-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 180ms ease;
+  pointer-events: none;
+}
+.image-preview-modal.open {
   opacity: 1;
-  transform: none;
+  pointer-events: auto;
 }
-@media (prefers-reduced-motion: reduce) {
-  .slide-content > * {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
+.image-preview-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+}
+.image-preview-frame {
+  position: relative;
+  max-width: min(96vw, 1400px);
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  z-index: 1;
+}
+.image-preview-img {
+  max-width: 100%;
+  max-height: 82vh;
+  object-fit: contain;
+  border-radius: var(--radius-lg, 8px);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.7);
+  background: #000;
+}
+.image-preview-caption {
+  margin-top: 0.6rem;
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--fg-1, #d8d2c4);
+  font-family: var(--font-body, inherit);
+  letter-spacing: 0.01em;
+  min-height: 1.4em;
+}
+.image-preview-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: background 160ms ease, transform 120ms ease;
+}
+.image-preview-close:hover,
+.image-preview-close:focus-visible {
+  background: rgba(0, 0, 0, 0.85);
+  transform: scale(1.06);
+  outline: 2px solid var(--amber-400, #d99a4a);
+  outline-offset: 2px;
 }
 
-/* ─── Idle-glow nudge (60s dwell on Advance) ─────────────────────────── */
-@keyframes glowPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(200, 200, 200, 0.0); }
-  50%      { box-shadow: 0 0 12px 3px rgba(200, 200, 200, 0.35); }
+/* The .showcase-row img and the slider-image both gain cursor:zoom-in
+   inline from JS; no CSS tweak needed beyond the preview modal. */
+
+/* Idle-hint — fades in beneath a widget after ~4.5s of dwell without any
+   interaction. `.visible` is toggled by Scrub.registerIdleHint in scrub.js.
+   Positioned as a block-level sibling of the widget (the template emits
+   <div class="idle-hint" data-idle-hint-for="widget-id">…</div>). */
+.idle-hint {
+  margin-top: var(--space-3, 0.75rem);
+  padding: 0.45rem 0.75rem;
+  font-size: 0.8rem;
+  color: var(--fg-2, #9a948a);
+  background: rgba(255, 176, 77, 0.04);
+  border-left: 2px solid var(--amber-400, #d99a4a);
+  border-radius: 3px;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 320ms ease, transform 320ms ease;
+  pointer-events: none;
+  max-width: 42ch;
 }
-.btn.glow-nudge { animation: glowPulse 2.2s ease-in-out infinite; }
-@media (prefers-reduced-motion: reduce) {
-  .btn.glow-nudge { animation: none; outline: 1px solid var(--accent); }
+.idle-hint.visible {
+  opacity: 0.9;
+  transform: translateY(0);
 }
 
-/* ─── Auto-drift cue (widgets softly cycle while idle) ───────────────── */
-/* The drift is driven by JS; this class provides a subtle shimmer on the
-   range-track so users read the widget as "alive / touchable". */
-.slider-row.auto-drifting input[type="range"],
-.compare-viewer.auto-drifting .compare-handle {
-  transition: filter 600ms ease;
-  filter: brightness(1.05);
+/* Scrubbing — widget is mid-drag. The Scrub helper also sets
+   body.style.cursor = 'none' inline, so the cursor disappears during the
+   drag and returns on release. No CSS default for .is-scrubbing today;
+   per-widget blocks can key off it if they want to tint while dragging. */
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+  .idle-hint { transition: opacity 0s !important; }
 }

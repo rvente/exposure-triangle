@@ -54,6 +54,10 @@ def build():
         yield "/intro/"
 
     @freezer.register_generator
+    def intro_why_dark():
+        yield "/intro/why-dark/"
+
+    @freezer.register_generator
     def learn():
         for n in range(1, reducer.NUM_LESSONS + 1):
             yield f"/learn/{n}/"
@@ -75,6 +79,10 @@ def build():
     @freezer.register_generator
     def reference_card():
         yield "/reference/"
+
+    @freezer.register_generator
+    def pad():
+        yield "/pad/"
 
     if DESTINATION.exists():
         shutil.rmtree(DESTINATION)
