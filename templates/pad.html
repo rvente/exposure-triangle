@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% from "_viz.html" import dial %}
+{% block title %}Virtual camera — Exposure Triangle{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pad.css') }}">
+
+<section class="pad-page" id="pad-page">
+  <header class="pad-header">
+    <h1>Virtual camera</h1>
+    <p class="pad-subtitle">
+      Small live viewfinder on the left — always running at 1/120 s so
+      scrubbing <strong>iris</strong> and <strong>sensitivity</strong>
+      stays responsive. Press <strong>Snap</strong> (or spacebar) to
+      capture the photograph on the right at your chosen
+      <strong>capture duration</strong>. Long shutters spend real time
+      accumulating samples — that wait <em>is</em> taking the picture.
+      Each photo lands in the album below with its settings;
+      click a thumbnail to inspect it full-size.
+    </p>
+  </header>
+
+  <div class="pad-layout">
+    <div class="pad-stage">
+      <div class="pad-photo-wrap">
+        <canvas id="pad-photo-canvas" width="1024" height="1024"
+                aria-label="Captured photograph"></canvas>
+        <div class="pad-photo-overlay" id="pad-photo-overlay" aria-live="polite">
+          <span class="pad-photo-placeholder" id="pad-photo-placeholder">
+            Press <kbd class="pad-kbd">␣</kbd> or Snap to take a photo.
+          </span>
+          <span class="pad-photo-progress" id="pad-photo-progress" hidden></span>
+        </div>
+      </div>
+
+      <div class="pad-viewfinder-wrap" aria-label="Live viewfinder">
+        <canvas id="pad-live-canvas" width="384" height="384"
+                aria-label="Live viewfinder"></canvas>
+        <div class="pad-readout" id="pad-readout" aria-live="polite">
+          <span class="readout-field"><span class="readout-label">f/</span><span id="readout-fstop">4.0</span></span>
+          <span class="readout-sep">·</span>
+          <span class="readout-field">1/<span id="readout-shutter">125</span> s</span>
+          <span class="readout-sep">·</span>
+          <span class="readout-field">ISO <span id="readout-iso">400</span></span>
+          <span class="readout-sep">·</span>
+          <span class="readout-field" id="readout-status">LIVE</span>
+        </div>
+        <div class="pad-fallback" id="pad-fallback" hidden>
+          <p><strong>WebGL2 unavailable.</strong> The virtual camera needs a
+          WebGL2-capable browser to run.</p>
+        </div>
+      </div>
+
+      <div class="pad-album" id="pad-album" aria-label="Captured photos">
+        <div class="pad-album-empty" id="pad-album-empty">
+          <span>Your album is empty — snap a photo to start it.</span>
+        </div>
+        <div class="pad-album-strip" id="pad-album-strip" role="list"></div>
+      </div>
+    </div>
+
+    <aside class="pad-controls">
+      {#- Iris drum (reused visual pattern from /learn/1). -#}
+      {%- set iris_stops = [
+        { 'label': 'f/1.4' },
+        { 'label': 'f/2.0' },
+        { 'label': 'f/2.8' },
+        { 'label': 'f/4.0' },
+        { 'label': 'f/5.6' },
+        { 'label': 'f/8.0' },
+        { 'label': 'f/11' },
+        { 'label': 'f/16' },
+        { 'label': 'f/22' }
+      ] -%}
+      {%- set iris_default = 3 -%}
+      <div class="drum" id="iris-drum" role="slider" tabindex="0"
+           aria-label="Iris (aperture)"
+           aria-valuemin="0" aria-valuemax="{{ iris_stops|length - 1 }}"
+           aria-valuenow="{{ iris_default }}"
+           data-count="{{ iris_stops|length }}"
+           data-default-index="{{ iris_default }}"
+           data-target-input="pad-iris-input">
+        <div class="drum-head">
+          <span class="label-plate">APERTURE</span>
+          <span class="tuner-read" data-drum-read>{{ iris_stops[iris_default].label }}</span>
+        </div>
+        <div class="drum-viewport">
+          <div class="drum-strip" data-drum-strip>
+            {% for stop in iris_stops %}
+              {%- set open_amt = 1.0 - (loop.index0 / (iris_stops|length - 1)) -%}
+            <div class="drum-label" data-index="{{ loop.index0 }}" style="--open: {{ open_amt }};">
+              <span class="drum-dot" style="--dot-size: {{ (4 + open_amt * 22) | round(1) }}px;"></span>
+              <span class="drum-text">{{ stop.label }}</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="drum-reticle" aria-hidden="true"></div>
+        <div class="idle-hint" data-idle-hint-for="iris-drum">
+          Drag to change iris. Wide open = bokeh; narrow = deep focus.
+        </div>
+      </div>
+      <input type="range" id="pad-iris-input" class="sr-only"
+             min="0" max="{{ iris_stops|length - 1 }}" step="0.001"
+             value="{{ iris_default }}">
+
+      {#- Shutter dial. -#}
+      {%- set shutter_stops = [
+        {'value': 0, 'label': '1/4000 s', 'readout': '1/4000 s', 'seconds': 0.00025},
+        {'value': 1, 'label': '1/1000 s', 'readout': '1/1000 s', 'seconds': 0.001},
+        {'value': 2, 'label': '1/500 s',  'readout': '1/500 s',  'seconds': 0.002},
+        {'value': 3, 'label': '1/250 s',  'readout': '1/250 s',  'seconds': 0.004},
+        {'value': 4, 'label': '1/125 s',  'readout': '1/125 s',  'seconds': 0.008},
+        {'value': 5, 'label': '1/60 s',   'readout': '1/60 s',   'seconds': 0.01667},
+        {'value': 6, 'label': '1/30 s',   'readout': '1/30 s',   'seconds': 0.0333},
+        {'value': 7, 'label': '1/8 s',    'readout': '1/8 s',    'seconds': 0.125},
+        {'value': 8, 'label': '1 s',      'readout': '1 s',      'seconds': 1.0},
+        {'value': 9, 'label': '4 s',      'readout': '4 s',      'seconds': 4.0}
+      ] -%}
+      <div class="dial-row shutter-row">
+        <input type="range" id="pad-shutter-input" class="sr-only"
+               min="0" max="{{ shutter_stops|length - 1 }}" step="0.001" value="4"
+               data-seconds='{{ shutter_stops | map(attribute="seconds") | list | tojson }}'>
+        {{ dial('pad-shutter-dial', shutter_stops, 4, 'SHUTTER', shutter_stops[4].readout, 'pad-shutter-input') }}
+      </div>
+
+      {#- ISO dial. -#}
+      {%- set iso_stops = [
+        {'value': 0, 'label': 'ISO 100',  'readout': '100'},
+        {'value': 1, 'label': 'ISO 200',  'readout': '200'},
+        {'value': 2, 'label': 'ISO 400',  'readout': '400'},
+        {'value': 3, 'label': 'ISO 800',  'readout': '800'},
+        {'value': 4, 'label': 'ISO 1600', 'readout': '1600'},
+        {'value': 5, 'label': 'ISO 3200', 'readout': '3200'},
+        {'value': 6, 'label': 'ISO 6400', 'readout': '6400'}
+      ] -%}
+      <div class="dial-row iso-row">
+        <input type="range" id="pad-iso-input" class="sr-only"
+               min="0" max="{{ iso_stops|length - 1 }}" step="0.001" value="2">
+        {{ dial('pad-iso-dial', iso_stops, 2, 'ISO', iso_stops[2].readout, 'pad-iso-input') }}
+      </div>
+
+      <div class="pad-actions">
+        <button type="button" class="btn btn-primary" id="pad-snap-btn">
+          Snap <kbd class="pad-kbd">␣</kbd>
+        </button>
+        <button type="button" class="btn btn-outline-secondary" id="pad-reset-btn">
+          Reset
+        </button>
+      </div>
+
+      <details class="pad-info">
+        <summary>How this works</summary>
+        <p>
+          <strong>Live viewfinder</strong> renders at a fixed 1/120 s so
+          iris and ISO feel instant — you see the depth of field and
+          noise change in real time.
+        </p>
+        <p>
+          <strong>Snap</strong> freezes time and integrates over your
+          chosen capture duration with samples jittered across both the
+          aperture disk (for bokeh) and the shutter window (for light
+          trails). The sample budget scales with shutter duration — a
+          long exposure takes real time to develop, which is the
+          simulation of taking the picture.
+        </p>
+        <p>
+          Each completed photo goes into the album below with its
+          settings; click a thumbnail to inspect full-size.
+        </p>
+      </details>
+    </aside>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/pad.js') }}"></script>
+{% endblock %}

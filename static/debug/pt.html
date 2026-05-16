@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>PT debug</title>
+  <style>
+    body { background:#111; color:#ddd; font:14px/1.4 ui-monospace,Menlo,monospace; margin:0; padding:1rem; }
+    #wrap { width: 600px; height: 600px; background:#000; margin:1rem 0; border:1px solid #333; }
+    #cv { display:block; width:100%; height:100%; background:#000; }
+    pre { background:#1a1a1a; padding:0.5rem; border:1px solid #333; max-height: 50vh; overflow:auto; }
+    .row { display:flex; gap:1rem; align-items:center; margin:0.3rem 0; }
+    label { width: 8rem; color:#aaa; }
+    input[type=range] { flex:1; }
+    .v { width: 5rem; text-align:right; color:#ffb04d; }
+  </style>
+</head>
+<body>
+  <h2>three-gpu-pathtracer debug</h2>
+  <div class="row">
+    <label>fStop</label>
+    <input id="fstop" type="range" min="1.4" max="22" step="0.1" value="4.0">
+    <span class="v" id="fstopV">4.0</span>
+  </div>
+  <div class="row">
+    <label>focusDistance</label>
+    <input id="focus" type="range" min="1" max="20" step="0.1" value="6.0">
+    <span class="v" id="focusV">6.0</span>
+  </div>
+  <div class="row">
+    <label>renderScale</label>
+    <input id="rscale" type="range" min="0.25" max="1" step="0.05" value="1.0">
+    <span class="v" id="rscaleV">1.0</span>
+  </div>
+  <div id="wrap">
+    <canvas id="cv" width="800" height="800"></canvas>
+  </div>
+  <pre id="log"></pre>
+
+  <script type="module">
+    const log = (...args) => {
+      console.log(...args);
+      document.getElementById('log').textContent +=
+        args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ') + '\n';
+    };
+    window.addEventListener('error', (e) => log('window error:', e.message, e.filename, e.lineno));
+    window.addEventListener('unhandledrejection', (e) => log('unhandled rejection:', e.reason));
+
+    log('booting');
+    let THREE, PT, GLTFLoader;
+    try {
+      THREE = await import('https://esm.sh/three@0.165.0');
+      log('three loaded', Object.keys(THREE).length, 'exports');
+    } catch (e) { log('three FAILED', e.message); throw e; }
+    try {
+      PT = await import('https://esm.sh/three-gpu-pathtracer@0.0.23?deps=three@0.165.0,three-mesh-bvh@0.7.4');
+      log('pt loaded', Object.keys(PT).join(','));
+    } catch (e) { log('pt FAILED', e.message); throw e; }
+    try {
+      ({ GLTFLoader } = await import('https://esm.sh/three@0.165.0/examples/jsm/loaders/GLTFLoader.js'));
+      log('GLTFLoader loaded');
+    } catch (e) { log('gltf loader FAILED', e.message); throw e; }
+    let gltf;
+    try {
+      gltf = await new GLTFLoader().loadAsync('/static/scenes/rainbow_ring.glb');
+      log('glb loaded, scene children:', gltf.scene.children.length);
+      // Walk the scene and report cameras + named nodes.
+      const summary = { cams: [], pivots: [], ringCubes: 0, meshes: 0, lights: 0 };
+      gltf.scene.traverse((o) => {
+        if (o.isCamera) summary.cams.push({ type: o.type, name: o.name, fov: o.fov, pos: o.position.toArray() });
+        if (o.name === 'RainbowRingPivot') summary.pivots.push(o.name);
+        if (o.name && o.name.startsWith('RainbowCube_')) summary.ringCubes++;
+        if (o.isMesh) summary.meshes++;
+        if (o.isLight) summary.lights++;
+      });
+      log('glb summary:', JSON.stringify(summary));
+      window.__gltf = gltf;
+    } catch (e) { log('glb load FAILED', e.message); }
+
+    const canvas = document.getElementById('cv');
+    log('canvas attr', canvas.width, canvas.height, 'client', canvas.clientWidth, canvas.clientHeight);
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias:false, alpha:false });
+    renderer.setPixelRatio(1);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.0;
+    log('renderer drawingBuffer', renderer.getDrawingBufferSize(new THREE.Vector2()));
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x050505);
+
+    const Cam = PT.PhysicalCamera || THREE.PerspectiveCamera;
+    log('camera class', Cam.name);
+    const camera = new Cam(35, 1, 0.1, 2000);
+    camera.position.set(0, 1.2, 6);
+    camera.lookAt(0, 0.5, 0);
+    if ('focusDistance' in camera) camera.focusDistance = 6.0;
+    if ('fStop' in camera) camera.fStop = 4.0;
+    if ('apertureBlades' in camera) camera.apertureBlades = 6;
+
+    const floor = new THREE.Mesh(
+      new THREE.PlaneGeometry(20, 20),
+      new THREE.MeshStandardMaterial({ color: 0x404040, roughness: 0.85 }),
+    );
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.y = -0.5;
+    scene.add(floor);
+
+    const subject = new THREE.Mesh(
+      new THREE.BoxGeometry(1, 1, 1),
+      new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.4 }),
+    );
+    scene.add(subject);
+
+    for (let i = 0; i < 24; i++) {
+      const theta = (i / 24) * Math.PI * 2;
+      const color = new THREE.Color().setHSL(i / 24, 1, 0.5);
+      const cube = new THREE.Mesh(
+        new THREE.BoxGeometry(0.4, 0.4, 0.4),
+        new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 8.0, roughness: 0.4 })
+      );
+      cube.position.set(3 * Math.cos(theta), 0.5, -8 + 3 * Math.sin(theta));
+      cube.rotation.set(theta, theta * 0.5, 0);
+      scene.add(cube);
+    }
+
+    const sun = new THREE.DirectionalLight(0xffffff, 1.5);
+    sun.position.set(2, 4, 3);
+    scene.add(sun);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.25));
+
+    log('scene children', scene.children.length);
+
+    // Quick rasterizer-only sanity render to verify the canvas is alive
+    // before involving the path tracer.
+    renderer.render(scene, camera);
+    log('rasterizer render OK');
+
+    const pathTracer = new PT.WebGLPathTracer(renderer);
+    pathTracer.minSamples = 1;       // show path-traced output ASAP
+    pathTracer.renderDelay = 0;      // skip the 100ms wait
+    pathTracer.fadeDuration = 0;     // no fade — show immediately
+    pathTracer.renderScale = 1.0;
+    log('pt config', { minSamples: pathTracer.minSamples, renderScale: pathTracer.renderScale });
+
+    pathTracer.setScene(scene, camera);
+    log('setScene done');
+
+    // Expose for agent-browser introspection.
+    window.__pt = pathTracer;
+    window.__renderer = renderer;
+    window.__canvas = canvas;
+    window.__scene = scene;
+    window.__camera = camera;
+    window.__THREE = THREE;
+    window.__PT = PT;
+
+    // Controls.
+    const $ = (id) => document.getElementById(id);
+    const onChange = () => {
+      const f = parseFloat($('fstop').value); $('fstopV').textContent = f.toFixed(1);
+      if ('fStop' in camera) camera.fStop = f;
+      const fd = parseFloat($('focus').value); $('focusV').textContent = fd.toFixed(1);
+      if ('focusDistance' in camera) camera.focusDistance = fd;
+      const rs = parseFloat($('rscale').value); $('rscaleV').textContent = rs.toFixed(2);
+      pathTracer.renderScale = rs;
+      pathTracer.updateCamera();
+      pathTracer.reset();
+    };
+    ['fstop', 'focus', 'rscale'].forEach(id => $(id).addEventListener('input', onChange));
+
+    // Path-tracer tick is gated behind window.__startTick so we can
+    // inspect state via CDP without the GPU starving the eval channel.
+    let n = 0, ticking = false;
+    function tick() {
+      if (!ticking) return;
+      pathTracer.renderSample();
+      if ((++n) % 30 === 0) log('tick', n, 'samples=', pathTracer.samples);
+      requestAnimationFrame(tick);
+    }
+    window.__startTick = () => { if (!ticking) { ticking = true; requestAnimationFrame(tick); log('tick started'); } };
+    window.__stopTick  = () => { ticking = false; log('tick stopped'); };
+    log('tick loop wired (call __startTick() to begin)');
+
+    // Helper: try the same boot code our pad module uses, against the
+    // loaded GLB. Returns first error so we can pinpoint which line dies.
+    window.__tryGlbBoot = () => {
+      if (!window.__gltf) return { err: 'no gltf loaded' };
+      try {
+        const gscene = window.__gltf.scene;
+        gscene.background = new THREE.Color(0x000000);
+        let blenderCam = null;
+        gscene.traverse((o) => { if (!blenderCam && o.isCamera && o.isPerspectiveCamera) blenderCam = o; });
+        const Cam = PT.PhysicalCamera || THREE.PerspectiveCamera;
+        const cam2 = new Cam();
+        if (blenderCam) {
+          cam2.position.copy(blenderCam.getWorldPosition(new THREE.Vector3()));
+          cam2.quaternion.copy(blenderCam.getWorldQuaternion(new THREE.Quaternion()));
+          cam2.fov  = blenderCam.fov;
+          cam2.near = blenderCam.near;
+          cam2.far  = blenderCam.far;
+          cam2.updateProjectionMatrix();
+        }
+        if ('focusDistance'  in cam2) cam2.focusDistance  = cam2.position.length();
+        if ('fStop'          in cam2) cam2.fStop          = 4.0;
+        if ('apertureBlades' in cam2) cam2.apertureBlades = 6;
+        log('about to setScene with GLB (tris ≈ all materials present)');
+        pathTracer.setScene(gscene, cam2);
+        log('setScene with GLB succeeded');
+        return { ok: true, blenderCamFound: !!blenderCam };
+      } catch (e) {
+        log('GLB setScene threw:', e.message);
+        return { err: e.message, stack: e.stack };
+      }
+    };
+    log('debug page ready. window.__tryGlbBoot() to attempt GLB swap.');
+  </script>
+</body>
+</html>

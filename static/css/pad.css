@@ -1,0 +1,290 @@
+/* Virtual-camera interactive (G4 item #11 restore). Dark-first to match the app.
+   Two render surfaces: a large photograph canvas + a small live viewfinder.
+   Album strip of captured photos sits beneath them. */
+
+.pad-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem 1.25rem 2rem;
+  color: var(--fg, #eee);
+}
+
+.pad-header h1 {
+  font-size: 1.6rem;
+  margin-bottom: 0.35rem;
+  letter-spacing: 0.01em;
+}
+
+.pad-subtitle {
+  margin: 0;
+  color: #aaa;
+  max-width: 72ch;
+  line-height: 1.5;
+}
+
+.pad-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .pad-layout { grid-template-columns: 1fr; }
+}
+
+/* ---------- stage (photo + viewfinder + album) ---------- */
+
+.pad-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 200px;
+  grid-template-areas:
+    "photo  viewfinder"
+    "album  album";
+  gap: 0.9rem;
+  align-items: start;
+}
+
+@media (max-width: 700px) {
+  .pad-stage {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "viewfinder"
+      "photo"
+      "album";
+  }
+}
+
+/* Photograph surface — big, receives the accumulated snap. */
+.pad-photo-wrap {
+  grid-area: photo;
+  position: relative;
+  background: #060606;
+  border: 1px solid #222;
+  border-radius: 6px;
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+}
+
+#pad-photo-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #000;
+}
+
+.pad-photo-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  color: #888;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 1rem;
+}
+.pad-photo-overlay[data-hidden="true"] { display: none; }
+
+.pad-photo-placeholder {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: #999;
+  letter-spacing: 0.02em;
+}
+
+.pad-photo-progress {
+  position: absolute;
+  bottom: 0.8rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.75);
+  color: var(--accent, #ffb04d);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 3px;
+  letter-spacing: 0.04em;
+}
+
+/* Live viewfinder — small, always running. */
+.pad-viewfinder-wrap {
+  grid-area: viewfinder;
+  position: relative;
+  background: #060606;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+  max-width: 200px;
+}
+
+#pad-live-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #000;
+}
+
+.pad-readout {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0.4rem 0.55rem;
+  background: linear-gradient(to top, rgba(0,0,0,0.82), rgba(0,0,0,0));
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.66rem;
+  color: #ddd;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  align-items: baseline;
+  pointer-events: none;
+}
+
+.readout-label { color: #888; }
+.readout-sep   { color: #444; }
+#readout-status { margin-left: auto; color: var(--accent, #ffb04d); font-weight: 600; }
+#readout-status.snapping { color: #66d9ef; }
+
+.pad-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: #0a0a0a;
+  text-align: center;
+  font-size: 0.75rem;
+}
+.pad-fallback p { max-width: 28ch; color: #ccc; }
+
+/* ---------- album ---------- */
+
+.pad-album {
+  grid-area: album;
+  background: #0a0a0a;
+  border: 1px solid #222;
+  border-radius: 6px;
+  padding: 0.6rem 0.75rem;
+  min-height: 92px;
+  overflow-x: auto;
+  display: flex;
+  align-items: center;
+}
+
+.pad-album-empty {
+  color: #777;
+  font-style: italic;
+  font-size: 0.85rem;
+}
+.pad-album-empty[data-hidden="true"] { display: none; }
+
+.pad-album-strip {
+  display: flex;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.pad-album-item {
+  position: relative;
+  flex: 0 0 auto;
+  width: 80px;
+  background: #0d0d0d;
+  border: 1px solid #2a2a2a;
+  border-radius: 4px;
+  padding: 4px;
+  cursor: zoom-in;
+  transition: border-color 120ms ease, transform 120ms ease;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.pad-album-item:hover,
+.pad-album-item:focus-visible {
+  border-color: var(--accent, #ffb04d);
+  outline: none;
+  transform: translateY(-1px);
+}
+.pad-album-item img {
+  display: block;
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 2px;
+  background: #000;
+}
+
+.pad-album-caption {
+  font-size: 0.58rem;
+  color: #bbb;
+  line-height: 1.15;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+/* ---------- controls ---------- */
+
+.pad-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.pad-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+.pad-actions .btn { flex: 1; }
+
+.pad-kbd {
+  display: inline-block;
+  padding: 0 0.35em;
+  border: 1px solid #444;
+  border-radius: 3px;
+  background: #1a1a1a;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85em;
+  color: #ccc;
+}
+
+.pad-info summary {
+  cursor: pointer;
+  color: #aaa;
+  font-size: 0.85rem;
+}
+.pad-info p {
+  font-size: 0.85rem;
+  color: #aaa;
+  margin-top: 0.5rem;
+  line-height: 1.5;
+}
+.pad-info code {
+  background: #222;
+  padding: 0 0.3rem;
+  border-radius: 3px;
+  color: #eee;
+}
+
+/* ---------- image-preview caption formatting (pad album) ---------- */
+/* The /pad album uses captionHtml to pack f/shutter/ISO into the
+   existing .image-preview-caption. The caption renderer inserts plain
+   inline spans; no special container styling needed beyond color. */
+
+.image-preview-caption .pad-caption-settings {
+  display: inline-flex;
+  gap: 0.8em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--accent, #ffb04d);
+  letter-spacing: 0.04em;
+}
