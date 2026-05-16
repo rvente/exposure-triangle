@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_icons.html" import icon %}
 {% block title %}Quiz {{ quiz_n }}{% endblock %}
 {% block content %}
 {# `content` is the active-variant block chosen by the reducer's
@@ -67,10 +68,13 @@
     <button type="submit"
             name="choice"
             value="{{ opt.id }}"
-            class="btn btn-outline-primary text-start quiz-option{% if feedback and feedback.locked and feedback.correct_choice == opt.id %} correct{% endif %}{% if selected == opt.id and feedback and not feedback.correct %} {{ 'incorrect' if feedback.locked else 'disabled-wrong' }}{% endif %}"
+            class="btn btn-outline-primary text-start quiz-option{% if opt.icon %} quiz-option--with-icon{% endif %}{% if feedback and feedback.locked and feedback.correct_choice == opt.id %} correct{% endif %}{% if selected == opt.id and feedback and not feedback.correct %} {{ 'incorrect' if feedback.locked else 'disabled-wrong' }}{% endif %}"
             data-opt-id="{{ opt.id }}"
             {% if feedback and feedback.locked %}disabled{% endif %}>
-      {{ opt.text }}
+      {%- if opt.icon -%}
+        <span class="quiz-option-icon" aria-hidden="true" data-opt-icon="{{ opt.icon }}">{{ icon(opt.icon) }}</span>
+      {%- endif -%}
+      <span class="quiz-option-text">{{ opt.text }}</span>
     </button>
     {% endfor %}
   </div>

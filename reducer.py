@@ -32,7 +32,7 @@ import statistics
 from dataclasses import dataclass, field, replace
 from typing import Any
 
-NUM_LESSONS = 7
+NUM_LESSONS = 8
 # Main-flow quiz count (what "Question N of M" shows to the learner during
 # the activate phase). Bonus questions are additive — see BONUS_QUIZ_IDS.
 NUM_QUIZZES = 8
@@ -47,6 +47,13 @@ BONUS_QUIZ_IDS: tuple[str, ...] = ("9", "10")
 # count required inside that window to unlock bonus.
 BONUS_GATE_WINDOW = 5
 BONUS_GATE_MIN_FIRST_TRY = 4
+# Median first-try-correct latency inside the window must be at or below
+# this to clear the gate. Bonus-worthy means "right AND fast" — a learner
+# who aced the first five but spent 45 s per question is still learning;
+# bonus is for the ones who've locked in intuition. Median is robust to
+# one slow outlier (coffee break / distraction). Aligned with
+# `_latency_factor`, where 15 s is the midpoint of the attentive range.
+BONUS_GATE_MAX_MEDIAN_LATENCY_MS = 15_000
 
 # EWMA smoothing factor for per-question proficiency updates. 0.3 weights
 # the most recent answer at 30 % and the running estimate at 70 % — slow
@@ -144,15 +151,25 @@ def bucket_for(proficiency: float) -> str:
 
 def _evaluate_bonus_gate(answers: tuple) -> bool:
     """Sticky: bonus unlocks when the first BONUS_GATE_WINDOW answers hold
-    at least BONUS_GATE_MIN_FIRST_TRY first-try corrects. Caller is
+    at least BONUS_GATE_MIN_FIRST_TRY first-try corrects **and** their
+    median latency is at most BONUS_GATE_MAX_MEDIAN_LATENCY_MS. Caller is
     responsible for OR-ing with the current `bonus_unlocked` flag so a
     later revisit can't retract the unlock.
+
+    Only first-try-correct answers count toward the latency median — a
+    learner who got an answer wrong on the first try and recovered with
+    the second-chance hint should not have that recovery time penalize
+    the bonus gate.
     """
     if len(answers) < BONUS_GATE_WINDOW:
         return False
     window = answers[:BONUS_GATE_WINDOW]
-    first_try = sum(1 for a in window if a.get("first_try_correct"))
-    return first_try >= BONUS_GATE_MIN_FIRST_TRY
+    first_try_answers = [a for a in window if a.get("first_try_correct")]
+    if len(first_try_answers) < BONUS_GATE_MIN_FIRST_TRY:
+        return False
+    first_try_latencies = [a.get("latency_ms", 0) for a in first_try_answers]
+    median_latency = statistics.median(first_try_latencies)
+    return median_latency <= BONUS_GATE_MAX_MEDIAN_LATENCY_MS
 
 
 def _recompute_adaptive(state: State) -> dict:

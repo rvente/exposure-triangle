@@ -73,8 +73,8 @@
       "low": {
         "prompt": "Which Camera Iris setting produced this photo?",
         "options": [
-          {"id": "a", "text": "Wide open Camera Iris"},
-          {"id": "b", "text": "Very closed Camera Iris"}
+          {"id": "a", "text": "Wide open Camera Iris", "icon": "eye"},
+          {"id": "b", "text": "Very closed Camera Iris", "icon": "eye"}
         ],
         "correct": "a",
         "hint_on_wrong": "Remember from the Camera Iris lesson: a wide-open Iris = shallow focus = soft bokeh. A closed Iris keeps everything sharp. The blurry background here is the tell.",
@@ -228,8 +228,8 @@
       "low": {
         "prompt": "How long should the shutter stay open?",
         "options": [
-          {"id": "a", "text": "As short as possible — freeze every detail"},
-          {"id": "b", "text": "A bit longer — let the wings streak a little"}
+          {"id": "a", "text": "As short as possible — freeze every detail", "icon": "timer"},
+          {"id": "b", "text": "A bit longer — let the wings streak a little", "icon": "timer"}
         ],
         "correct": "b",
         "hint_on_wrong": "Remember from the Capture Duration lesson: a tiny bit of streak reads as motion. Zero streak reads as a frozen statue.",
@@ -281,8 +281,8 @@
         "prompt": "What does turning up Sensor Sensitivity cost you?",
         "options": [
           {"id": "a", "text": "Nothing — it's a free brightness boost"},
-          {"id": "b", "text": "Shallower depth of field"},
-          {"id": "c", "text": "More visible grain / noise"}
+          {"id": "b", "text": "Shallower depth of field", "icon": "eye"},
+          {"id": "c", "text": "More visible grain / noise", "icon": "zap"}
         ],
         "correct": "c",
         "hint_on_wrong": "Remember from the Sensor Sensitivity lesson: every exposure knob has a price. Sensitivity trades light for grain.",
@@ -333,8 +333,8 @@
       "low": {
         "prompt": "Two controls are already maxed. Which one is left?",
         "options": [
-          {"id": "a", "text": "Raise Sensor Sensitivity"},
-          {"id": "b", "text": "Close the Iris further"}
+          {"id": "a", "text": "Raise Sensor Sensitivity", "icon": "zap"},
+          {"id": "b", "text": "Close the Iris further", "icon": "eye"}
         ],
         "correct": "a",
         "hint_on_wrong": "Remember: the setup says the Iris is already wide open. Closing it wouldn't brighten the image.",

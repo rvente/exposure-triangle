@@ -70,9 +70,11 @@ CHAPTERS = (
     ("duration", "Duration", "/learn/2"),
     ("sensitivity", "Sensitivity", "/learn/4"),
     ("triangle", "Triangle", "/learn/7"),
+    ("philosophy", "Why", "/learn/8"),
     ("quizzes", "Quizzes", "/quiz/1"),
     ("result", "Result", "/result"),
     ("reference", "Reference", "/reference"),
+    ("pad", "Pad", "/pad"),
 )
 
 
@@ -136,25 +138,44 @@ def create_app(db_path: str | None = None, *, is_static: bool = False) -> Flask:
 
     def _learn_chapter(n: int) -> str:
         # Lessons 2-3 are the duration showcase + slider; 4-6 are the
-        # sensitivity showcase + toggle + compare; 7 is the triangle summary.
+        # sensitivity showcase + toggle + compare; 7 is the triangle summary;
+        # 8 is the philosophy closing slide (why the controls feel like this).
         # All sub-pages within a section map back to the section's chapter.
         return {
             1: "iris",
             2: "duration", 3: "duration",
             4: "sensitivity", 5: "sensitivity", 6: "sensitivity",
             7: "triangle",
+            8: "philosophy",
         }.get(n, "iris")
 
     @app.route("/intro", methods=["GET", "POST"])
     def intro():
         s = store.load(sid())
         if request.method == "POST":
-            s, _ = reducer.reduce(s, {"type": "enter", "page": "learn", "index": 1}, now_ms())
-            store.save(s)
-            return redirect("/learn/1")
+            # Now goes to the why-dark slide rather than straight to /learn/1
+            # so the dark-mode + HDR setup note has its own page in the chapter.
+            return redirect("/intro/why-dark")
         s, _ = reducer.reduce(s, {"type": "enter", "page": "intro", "index": 0}, now_ms())
         store.save(s)
         return render_template("intro.html", current_chapter="intro", prev_url="/")
+
+    @app.route("/intro/why-dark", methods=["GET", "POST"])
+    def intro_why_dark():
+        s = store.load(sid())
+        if request.method == "POST":
+            s, _ = reducer.reduce(s, {"type": "enter", "page": "learn", "index": 1}, now_ms())
+            store.save(s)
+            return redirect("/learn/1")
+        # Same enter event as /intro — the reducer treats the chapter as one
+        # logical "page", and the slide is purely informational.
+        s, _ = reducer.reduce(s, {"type": "enter", "page": "intro", "index": 0}, now_ms())
+        store.save(s)
+        return render_template(
+            "intro_why_dark.html",
+            current_chapter="intro",
+            prev_url="/intro",
+        )
 
     @app.route("/learn/<int:n>", methods=["GET", "POST"])
     def learn(n: int):
@@ -336,6 +357,24 @@ def create_app(db_path: str | None = None, *, is_static: bool = False) -> Flask:
             current_chapter="reference",
             prev_url="/result",
         )
+
+    @app.route("/hdr-test")
+    def hdr_test():
+        # Diagnostic harness: show one bokeh frame through every plausible
+        # rendering path (plain <img>, <img> with various filters, canvas 2D
+        # with different colorSpace options, WebGL with display-p3 swapchain)
+        # so we can visually confirm which path actually pushes the PQ AVIF
+        # past SDR diffuse-white on the user's display + browser combination.
+        # Not part of the main lesson flow; not in CHAPTERS.
+        return render_template("hdr_test.html")
+
+    @app.route("/pad")
+    def pad():
+        # Virtual-camera interactive — G4 final-project preview. Pure WebGL2
+        # procedural scene with thin-lens DoF, temporal motion blur, and
+        # Poisson-Gaussian ISO noise. No session state; the page is self-
+        # contained and renders identically in live + frozen builds.
+        return render_template("pad.html", current_chapter="pad", prev_url="/reference")
 
     @app.route("/api/state")
     def api_state():

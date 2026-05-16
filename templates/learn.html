@@ -1,20 +1,25 @@
 {% extends "base.html" %}
+{% from "_icons.html" import icon %}
+{% from "_viz.html" import viz_iris, viz_shutter, viz_iso, dial %}
 {% block title %}Lesson {{ lesson_n }} — {{ lesson.title }}{% endblock %}
 {% block content %}
-{% if lesson.technical_term %}
-<div class="d-flex justify-content-end align-items-center mb-1">
-  <span class="text-muted small technical-term faded" data-technical-term>{{ lesson.technical_term }}</span>
+{# Lesson header plate: technical term + matching concept icon in the top-right. #}
+{% set lesson_icon = 'eye' if lesson.id.startswith('iris') else ('timer' if lesson.id.startswith('duration') else ('zap' if lesson.id.startswith('sensitivity') else '')) %}
+{% if lesson.technical_term or lesson_icon %}
+<div class="lesson-plate">
+  {% if lesson.technical_term %}<span class="technical-term faded" data-technical-term>{{ lesson.technical_term }}</span>{% endif %}
+  {% if lesson_icon %}<span class="lesson-plate-icon" aria-hidden="true">{{ icon(lesson_icon) }}</span>{% endif %}
 </div>
 {% endif %}
 
-<h1 class="mb-3{% if lesson.kind == 'summary' %} text-center{% endif %}">{{ lesson.title }}</h1>
+<h1 class="mb-3{% if lesson.kind in ('summary', 'philosophy') %} text-center{% endif %}">{{ lesson.title }}</h1>
 
 {% if lesson.kind == "summary" %}
 {% if lesson.subtitle %}<p class="lead text-muted mb-4 text-center">{{ lesson.subtitle }}</p>{% endif %}
 <div class="bucket-row">
   {% for bucket in lesson.buckets %}
   <div class="bucket-item">
-    <div class="bucket-icon">{{ bucket.icon }}</div>
+    <div class="bucket-icon">{{ icon(bucket.icon) }}</div>
     <div class="bucket-label">
       <strong>{{ bucket.name }}</strong><br>
       {{ bucket.effect }}<br>
@@ -25,6 +30,17 @@
 </div>
 <p class="summary-body mt-4">{{ lesson.body }}</p>
 <p class="summary-insight mt-3">{{ lesson.insight }}</p>
+{% elif lesson.kind == "philosophy" %}
+{# Closing note: "why the controls feel like this" (G4 #12). Pure prose,
+   no widgets — the lesson makes its point and lets the learner think
+   before the quiz starts. #}
+{% if lesson.subtitle %}<p class="lead text-muted mb-4 text-center philosophy-subtitle">{{ lesson.subtitle }}</p>{% endif %}
+<div class="philosophy-body">
+  {% for para in lesson.paragraphs %}
+  <p>{{ para | markdown_inline }}</p>
+  {% endfor %}
+</div>
+{% if lesson.closer %}<p class="philosophy-closer mt-4 text-center">{{ lesson.closer }}</p>{% endif %}
 {% else %}
 
 {% if lesson.subtitle %}<p class="lead text-muted mb-3">{{ lesson.subtitle | markdown_inline }}</p>{% endif %}
@@ -47,13 +63,188 @@
 {% if lesson.body_post %}<div class="lesson-body mb-4" data-lesson-body-post>{{ lesson.body_post | markdown_inline }}</div>{% endif %}
 
 {% if lesson.slider %}
+{% set image_mode = 'blend' if lesson.id in ['iris', 'duration_interactive'] else 'crossfade' %}
 <div class="slider-viewer mb-2" id="slider-viewer"
      data-default-index="{{ lesson.slider.default_index }}"
      data-frames='{{ lesson.slider.frames | tojson }}'>
-  <img class="slider-image" id="slider-image"
-       src="{{ url_for('static', filename=lesson.slider.frames[lesson.slider.default_index].src) }}"
-       alt="{{ lesson.slider.frames[lesson.slider.default_index].label }}">
+  <div class="image-stack" data-showing="a" data-mode="{{ image_mode }}">
+    <img class="slider-image" id="slider-image" data-slot="a"
+         src="{{ url_for('static', filename=lesson.slider.frames[lesson.slider.default_index].src) }}"
+         alt="{{ lesson.slider.frames[lesson.slider.default_index].label }}">
+    <img class="slider-image-shadow" data-slot="b" aria-hidden="true"
+         src="{{ url_for('static', filename=lesson.slider.frames[lesson.slider.default_index].src) }}"
+         alt="">
+  </div>
+  {% if lesson.id.startswith('iris') %}
+    {{ viz_iris(1.0 - (lesson.slider.default_index / (lesson.slider.frames|length - 1))) }}
+  {% elif lesson.id.startswith('duration') %}
+    {{ viz_shutter(lesson.slider.default_index / (lesson.slider.frames|length - 1)) }}
+  {% elif lesson.id.startswith('sensitivity') %}
+    {{ viz_iso(lesson.slider.default_index / (lesson.slider.frames|length - 1)) }}
+  {% endif %}
 </div>
+{% if lesson.id == "iris" %}
+{# Debug toggle: swap iris bokeh frames between the SDR set
+   (renders/bokeh_f*.avif) and the HDR set (renders/hdr/bokeh_f*.avif,
+   PQ-encoded BT.2020). Synced with the same widget on /intro via
+   localStorage; eventual home of the global SDR/HDR setting. #}
+<div class="hdr-debug-row" data-debug-only>
+  <div class="hdr-toggle hdr-toggle-debug" data-hdr-toggle aria-label="Display mode">
+    <span class="hdr-toggle-label">Display <em>debug</em></span>
+    <div class="hdr-toggle-pill" role="group">
+      <button type="button" class="hdr-toggle-btn" data-hdr-mode="off" aria-pressed="true">SDR</button>
+      <button type="button" class="hdr-toggle-btn" data-hdr-mode="on" aria-pressed="false">HDR</button>
+    </div>
+  </div>
+  <span class="hdr-debug-note">
+    Iris darkening is baked into <code>renders/hdr-baked-5.6/</code> at
+    encode time (CSS <code>brightness()</code> squashes HDR through sRGB
+    working space, so a runtime gain didn't survive). Re-encode with
+    <code>REFFSTOP=&lt;n&gt; encode_avif_pq.sh</code> to change the neutral midpoint.
+  </span>
+</div>
+{# Iris drum — reticle fixed, labels rotate around it. Drag to select, snaps on release. #}
+<div class="drum" id="iris-drum" role="slider" tabindex="0"
+     aria-label="Iris f-stop"
+     aria-valuemin="0" aria-valuemax="{{ lesson.slider.frames|length - 1 }}" aria-valuenow="{{ lesson.slider.default_index }}"
+     data-count="{{ lesson.slider.frames|length }}"
+     data-default-index="{{ lesson.slider.default_index }}"
+     data-target-input="slider-input">
+  <div class="drum-head">
+    <span class="label-plate">APERTURE</span>
+    <span class="tuner-read" data-drum-read>{{ lesson.slider.frames[lesson.slider.default_index].label }}</span>
+  </div>
+  <div class="drum-viewport">
+    <div class="drum-strip" data-drum-strip>
+      {% for frame in lesson.slider.frames %}
+        {%- set fstr = (frame.src.split('bokeh_f')[1].rsplit('.', 1)[0]) if 'bokeh_f' in frame.src else '' -%}
+        {%- set open_amt = 1.0 - (loop.index0 / ((lesson.slider.frames|length - 1) | default(1, true))) -%}
+      <div class="drum-label" data-index="{{ loop.index0 }}" style="--open: {{ open_amt }};">
+        <span class="drum-dot" style="--dot-size: {{ (4 + open_amt * 22) | round(1) }}px;"></span>
+        <span class="drum-text">f/{{ fstr }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="drum-reticle" aria-hidden="true"></div>
+  <div class="drum-labels">
+    <span>{{ lesson.slider.ends_left | upper }}</span>
+    <span>{{ lesson.slider.ends_right | upper }}</span>
+  </div>
+  <div class="idle-hint" data-idle-hint-for="iris-drum">
+    Drag or use the arrow keys. Click a stop to jump.
+  </div>
+</div>
+<input type="range" id="slider-input" class="sr-only"
+       min="0" max="{{ lesson.slider.frames|length - 1 }}" value="{{ lesson.slider.default_index }}"
+       aria-hidden="true" tabindex="-1">
+
+{# Blend-mode debug knob: pick how the main iris viewer composites
+   adjacent frames during a drag. Both options are GPU-accelerated;
+   alpha blend gives a smooth crossfade, snap jumps to the nearest
+   integer frame. plus-lighter + N-slot stack were removed in the
+   N-slot cleanup pass — they only earned their cost on phones that
+   were already CPU-bound, and the alpha-blend midfade gamma issue
+   the report tracked turned out to be a JS double-attenuation bug
+   (now fixed) rather than a real linear-vs-sRGB problem. #}
+<div class="iris-blend-mode-row" data-debug-only>
+  <label>
+    Blend mode:
+    <select data-iris-blend-mode-select>
+      <option value="alpha">alpha blend (GPU)</option>
+      <option value="snap">snap (no crossfade, fastest)</option>
+    </select>
+  </label>
+  <span class="iris-blend-mode-hint">drag the drum and watch fps</span>
+</div>
+
+{# HDR-variant compare strip — three pinned image stacks (SDR / HDR baked
+   / HDR bright + baked) all driven by #slider-input above, so dragging
+   the iris drum updates all three side by side. Lifts the wiring from
+   /hdr-test verbatim. The main iris viewer + drum above are untouched —
+   this is purely additive diagnostic UI. #}
+{%- set _compare_variants = [
+  ('SDR', 'sdr', 'baseline — Blender exposure compensation baked in (Filmic clip at f-stop)'),
+  ('HDR PQ', 'hdr-baked-5.6', 'PQ BT.2020 (CICP 9/16/9), iris darkening baked at f/5.6 neutral'),
+  ('HDR HLG', 'hdr-baked-5.6-hlg', 'HLG transfer (CICP 9/18/9) — gentler shadow curve than PQ'),
+] -%}
+<section class="iris-hdr-compare" aria-label="HDR variant comparison" data-debug-only>
+  <div class="iris-hdr-compare-head">HDR variant compare</div>
+  <div class="iris-hdr-compare-grid">
+    {% for label, dir, blurb in _compare_variants %}
+    <div class="iris-hdr-compare-tile">
+      <h3 class="iris-hdr-compare-label">{{ label }}</h3>
+      <div class="image-stack iris-hdr-compare-stack"
+           data-iris-hdr-compare
+           data-source-dir="{{ dir }}"
+           data-frames='{{ lesson.slider.frames | tojson }}'
+           data-showing="a" data-mode="blend">
+        <img class="iris-hdr-compare-img" data-slot="a" alt="">
+        <img data-slot="b" aria-hidden="true" alt="">
+      </div>
+      <p class="iris-hdr-compare-meta">{{ blurb }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+{% elif lesson.id == "duration_interactive" %}
+{# Shutter — tuner + dial side-by-side, both bound to #slider-input. Dial
+   readout shows decimal seconds, interpolated continuously during tuner drag. #}
+{%- set shutter_seconds = [] -%}
+{%- for frame in lesson.slider.frames -%}
+  {%- set _ = shutter_seconds.append(frame.seconds) -%}
+{%- endfor -%}
+{%- set default_sec = lesson.slider.frames[lesson.slider.default_index].seconds -%}
+{%- if default_sec < 1 -%}
+  {%- set default_readout = '1/' ~ ((1 / default_sec) | round(0) | int) ~ ' s' -%}
+{%- else -%}
+  {%- set default_readout = (default_sec | round(1)) ~ ' s' -%}
+{%- endif -%}
+<div class="shutter-controls">
+  <div class="tuner shutter-tuner">
+    <div class="tuner-head">
+      <span class="label-plate">SHUTTER · SECONDS</span>
+      <span class="tuner-read" id="tuner-read">{{ lesson.slider.frames[lesson.slider.default_index].label }}</span>
+    </div>
+    <div class="tuner-strip" id="tuner-strip" role="slider" tabindex="0"
+         aria-label="Shutter duration"
+         aria-valuemin="0" aria-valuemax="{{ lesson.slider.frames|length - 1 }}" aria-valuenow="{{ lesson.slider.default_index }}">
+      <div class="tuner-ticks">
+        {% for i in range(21) %}<span class="tuner-tick{% if i % 5 == 0 %} major{% endif %}"></span>{% endfor %}
+      </div>
+      <div class="tuner-needle" id="tuner-needle"
+           style="left: {{ (lesson.slider.default_index / (lesson.slider.frames|length - 1) * 100) | round(2) }}%"></div>
+    </div>
+    <div class="tuner-labels">
+      <span>{{ lesson.slider.ends_left | upper }}</span>
+      <span>{{ lesson.slider.ends_right | upper }}</span>
+    </div>
+    <div class="idle-hint" data-idle-hint-for="tuner-strip">
+      Drag anywhere along the strip, or click to jump.
+    </div>
+  </div>
+  <div class="dial-row shutter-dial-row">
+    {%- set dial_stops = [] -%}
+    {%- for frame in lesson.slider.frames -%}
+      {%- set s = frame.seconds -%}
+      {%- if s < 1 -%}
+        {%- set rd = '1/' ~ ((1 / s) | round(0) | int) ~ ' s' -%}
+      {%- else -%}
+        {%- set rd = (s | round(1)) ~ ' s' -%}
+      {%- endif -%}
+      {%- set _ = dial_stops.append({'value': loop.index0, 'label': rd, 'readout': rd}) -%}
+    {%- endfor -%}
+    {{ dial('shutter-dial', dial_stops, lesson.slider.default_index, 'SHUTTER', default_readout, 'slider-input') }}
+  </div>
+</div>
+<input type="range" id="slider-input" class="sr-only"
+       min="0" max="{{ lesson.slider.frames|length - 1 }}" value="{{ lesson.slider.default_index }}"
+       aria-hidden="true" tabindex="-1"
+       data-seconds='{{ shutter_seconds | tojson }}'>
+{% else %}
+{# Legacy slider — iris lesson (will get its own drum component in commit 7)
+   and any other slider lessons fall here. #}
 <p class="slider-label text-center" id="slider-label">{{ lesson.slider.frames[lesson.slider.default_index].label }}</p>
 <div class="slider-row d-flex align-items-center justify-content-center gap-3 mb-3">
   <span class="text-muted small">{{ lesson.slider.ends_left }}</span>
@@ -61,20 +252,36 @@
          min="0" max="{{ lesson.slider.frames|length - 1 }}" value="{{ lesson.slider.default_index }}">
   <span class="text-muted small">{{ lesson.slider.ends_right }}</span>
 </div>
+{% endif %}
 {% elif lesson.toggle %}
 <div class="toggle-viewer mb-2" id="toggle-viewer"
      data-default-index="{{ lesson.toggle.default_index }}"
      data-frames='{{ lesson.toggle.frames | tojson }}'>
-  <img class="toggle-image" id="toggle-image"
-       src="{{ url_for('static', filename=lesson.toggle.frames[lesson.toggle.default_index].src) }}"
-       alt="{{ lesson.toggle.frames[lesson.toggle.default_index].label }}">
+  <div class="image-stack" data-showing="a">
+    <img class="toggle-image" id="toggle-image" data-slot="a"
+         src="{{ url_for('static', filename=lesson.toggle.frames[lesson.toggle.default_index].src) }}"
+         alt="{{ lesson.toggle.frames[lesson.toggle.default_index].label }}">
+    <img class="toggle-image-shadow" data-slot="b" aria-hidden="true"
+         src="{{ url_for('static', filename=lesson.toggle.frames[lesson.toggle.default_index].src) }}"
+         alt="">
+  </div>
+  {% if lesson.id.startswith('sensitivity') %}
+    {{ viz_iso(lesson.toggle.default_index / ((lesson.toggle.frames|length - 1) | default(1, true))) }}
+  {% endif %}
 </div>
 <p class="toggle-label text-center" id="toggle-label">{{ lesson.toggle.frames[lesson.toggle.default_index].label }}</p>
-<div class="toggle-group btn-group d-flex justify-content-center mb-3" id="toggle-group">
-  {% for frame in lesson.toggle.frames %}
-  <button type="button" class="btn btn-outline-primary toggle-btn{% if loop.index0 == lesson.toggle.default_index %} active{% endif %}" data-index="{{ loop.index0 }}">{{ frame.button }}</button>
-  {% endfor %}
-</div>
+{# Dial replaces the toggle-group entirely for ISO; one stop per toggle frame. #}
+<div class="dial-row">
+  {%- set dial_stops = [] -%}
+  {%- for frame in lesson.toggle.frames -%}
+    {%- set _ = dial_stops.append({'value': loop.index0, 'label': frame.button, 'readout': frame.button}) -%}
+  {%- endfor -%}
+  {{ dial('iso-dial', dial_stops, lesson.toggle.default_index, 'ISO') }}
+</div>{# /dial-row — sensitivity_toggle now points the toggle-viewer at
+        renders/iso_night_*.avif (set in data/lessons.json) so the dial
+        cranks through the night scene. The standalone iso-night-grid
+        section that briefly lived here was redundant once the viewer
+        showed the same images one at a time, like the iris page. #}
 {% else %}
 <div class="row g-3 mb-4">
   {% for img in lesson.images %}
@@ -96,6 +303,10 @@
 <p class="text-muted small scene-caption">{{ lesson.scene_caption | markdown_inline }}</p>
 {% endif %}
 
+{% if lesson.etymology %}
+<p class="lesson-etymology">{{ lesson.etymology | markdown_inline }}</p>
+{% endif %}
+
 {% if lesson.comparison %}
 <div class="compare-viewer mt-4" id="compare-viewer"
      data-base="{{ url_for('static', filename=lesson.comparison.base) }}"
@@ -113,6 +324,9 @@
 
 <div class="page-nav">
   {% if prev_url %}<a href="{{ prev_url }}" class="btn btn-outline-secondary" id="previous-btn">← Previous</a>{% else %}<span class="nav-spacer"></span>{% endif %}
+  {# Reserved slot for a user-authored iris opening/closing animation
+     (roadmap user-gated asset #12). Empty until Blake drops it in. #}
+  <div class="page-nav-iris" aria-hidden="true"></div>
   <form method="post" class="nav-form" data-static-action="learn_advance">
     <button id="advance-btn" class="btn btn-primary" type="submit">Advance →</button>
   </form>

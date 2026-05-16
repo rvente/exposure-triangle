@@ -8,12 +8,15 @@
 //     proficiency, proficiencyEwma, bucket,
 //     pendingBucket, pendingBucketCount, bonusUnlocked, variantSelections }
 
-const NUM_LESSONS = 7;
+const NUM_LESSONS = 8;
 const NUM_QUIZZES = 8;
 const BURN_IN_QUIZZES = 3;
 const BONUS_QUIZ_IDS = ["9", "10"];
 const BONUS_GATE_WINDOW = 5;
 const BONUS_GATE_MIN_FIRST_TRY = 4;
+// Median first-try-correct latency in the window must be <= this to clear
+// the gate (in ms). Mirrors reducer.py's BONUS_GATE_MAX_MEDIAN_LATENCY_MS.
+const BONUS_GATE_MAX_MEDIAN_LATENCY_MS = 15000;
 const EWMA_ALPHA = 0.3;
 
 // Answer key for all main-flow + bonus quizzes. Variants are expected to
@@ -90,12 +93,25 @@ function bucketFor(p) {
   return "low";
 }
 
+function medianOf(sortedOrUnsorted) {
+  const a = sortedOrUnsorted.slice().sort((x, y) => x - y);
+  const n = a.length;
+  if (n === 0) return 0;
+  const mid = Math.floor(n / 2);
+  return n % 2 === 1 ? a[mid] : (a[mid - 1] + a[mid]) / 2;
+}
+
 function evaluateBonusGate(answers) {
-  // Sticky gate: caller OR-s with current bonusUnlocked.
+  // Sticky gate: caller OR-s with current bonusUnlocked. Gate clears when
+  // the first BONUS_GATE_WINDOW answers carry at least
+  // BONUS_GATE_MIN_FIRST_TRY first-try corrects AND those first-try
+  // corrects have a median latency at or below the bonus cap.
   if (answers.length < BONUS_GATE_WINDOW) return false;
   const window = answers.slice(0, BONUS_GATE_WINDOW);
-  const firstTry = window.filter((a) => a.first_try_correct).length;
-  return firstTry >= BONUS_GATE_MIN_FIRST_TRY;
+  const firstTryAnswers = window.filter((a) => a.first_try_correct);
+  if (firstTryAnswers.length < BONUS_GATE_MIN_FIRST_TRY) return false;
+  const latencies = firstTryAnswers.map((a) => a.latency_ms || 0);
+  return medianOf(latencies) <= BONUS_GATE_MAX_MEDIAN_LATENCY_MS;
 }
 
 function recomputeAdaptive(state) {
