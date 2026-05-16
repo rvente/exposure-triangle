@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Why this site is dark{% endblock %}
+{% block content %}
+<h1 class="mb-3 text-center">Why this site is dark</h1>
+<p class="lead text-muted mb-4 text-center philosophy-subtitle">A short note about the screen you're using.</p>
+
+<div class="philosophy-body">
+  <p>
+    Lightroom, Premiere, DaVinci Resolve, the photographer's darkroom — all dark
+    for the same reason: <em>your own iris</em>. A dark UI lets your pupil open
+    wider so your eyes pick up subtle differences in tone. Same reason movie
+    theaters are black.
+  </p>
+  <p>
+    <strong>Your eyes are doing photography on this page too.</strong>
+  </p>
+  <p>
+    A few of the renders ahead — particularly the iris bokeh — are encoded for
+    HDR and reach well past your screen's normal SDR ceiling.
+    <strong>Set your display brightness to its maximum</strong> so those
+    highlights actually shine.
+  </p>
+</div>
+
+<div class="why-dark-toggle-row">
+  <div class="hdr-toggle" data-hdr-toggle aria-label="Display mode">
+    <span class="hdr-toggle-label">Display</span>
+    <div class="hdr-toggle-pill" role="group">
+      <button type="button" class="hdr-toggle-btn" data-hdr-mode="off" aria-pressed="true">SDR</button>
+      <button type="button" class="hdr-toggle-btn" data-hdr-mode="on" aria-pressed="false">HDR</button>
+    </div>
+  </div>
+</div>
+
+<p class="philosophy-closer mt-4 text-center">Crank the brightness. Let's begin.</p>
+
+<div class="page-nav">
+  <a href="/intro" class="btn btn-outline-secondary" id="previous-btn">← Previous</a>
+  <form method="post" class="nav-form" data-static-action="dark_advance">
+    <button id="advance-btn" class="btn btn-primary" type="submit">Advance →</button>
+  </form>
+</div>
+{% endblock %}

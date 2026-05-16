@@ -1,0 +1,372 @@
+{% extends "base.html" %}
+{% block title %}HDR rendering harness{% endblock %}
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+<h1 class="mb-1">HDR rendering harness</h1>
+<p class="lead text-muted mb-3">
+  One frame, every plausible path. Whichever tile pops brightest on an HDR
+  display is the path the iris viewer should adopt. Switch the source to
+  see whether the gap is the encoded data or the rendering pipeline.
+  <span class="text-muted small d-block mt-1">
+    Drag tile headers to reorder for side-by-side comparison
+    (long-press on touch). Order persists per-browser.
+  </span>
+</p>
+
+<div class="hdr-test-controls" data-hdr-test-controls>
+  <label class="hdr-debug-knob">
+    <span>Frame</span>
+    <select data-hdr-test-frame>
+      <option value="bokeh_f1.2.avif">f/1.2 (widest, brightest)</option>
+      <option value="bokeh_f5.6.avif">f/5.6 (mid)</option>
+      <option value="bokeh_f32.0.avif">f/32 (narrowest, darkest)</option>
+    </select>
+  </label>
+  <label class="hdr-debug-knob">
+    <span>Filter ×</span>
+    <input type="number" data-hdr-test-gain step="0.25" min="0.05" max="32" value="1">
+  </label>
+  <label class="hdr-debug-knob">
+    <span>Side-by-side at intrinsic size</span>
+    <input type="checkbox" data-hdr-test-natural>
+  </label>
+</div>
+
+<div class="hdr-test-grid" data-hdr-test-grid>
+  {# Each tile renders the SAME source via a different display path.
+     data-variant drives the JS path; data-source picks SDR vs HDR. #}
+
+  <div class="hdr-test-tile" data-variant="img-plain"      data-source="sdr">
+    <h3>SDR <code>&lt;img&gt;</code></h3>
+    <p class="meta">8-bit sRGB AVIF, no filter. Baseline.</p>
+    <img alt="">
+  </div>
+
+  <div class="hdr-test-tile" data-variant="img-plain"      data-source="hdr">
+    <h3>HDR <code>&lt;img&gt;</code></h3>
+    <p class="meta">PQ BT.2020 AVIF, no filter, no canvas.</p>
+    <img alt="">
+  </div>
+
+  <div class="hdr-test-tile" data-variant="img-filter-1"   data-source="hdr">
+    <h3>HDR + <code>filter: brightness(1)</code></h3>
+    <p class="meta">No-op filter. If this dims the image vs. the plain HDR tile, every CSS filter is sRGB-clamping.</p>
+    <img alt="">
+  </div>
+
+  <div class="hdr-test-tile" data-variant="img-filter-gain" data-source="hdr">
+    <h3>HDR + <code>filter: brightness(N)</code></h3>
+    <p class="meta">Live-tunable from the controls above. Tests whether <code>brightness()</code> can reach into HDR.</p>
+    <img alt="">
+  </div>
+
+  <div class="hdr-test-tile" data-variant="img-filter-gain" data-source="sdr">
+    <h3>SDR + <code>filter: brightness(N)</code></h3>
+    <p class="meta">Control: does <code>brightness(N&gt;1)</code> push an SDR source into HDR? If yes, encoded source isn't the problem.</p>
+    <img alt="">
+  </div>
+
+  <div class="hdr-test-tile" data-variant="canvas-srgb"     data-source="hdr">
+    <h3>HDR canvas 2D — sRGB</h3>
+    <p class="meta">Default canvas color space. Likely the worst case for HDR.</p>
+    <canvas></canvas>
+  </div>
+
+  <div class="hdr-test-tile" data-variant="canvas-p3"       data-source="hdr">
+    <h3>HDR canvas 2D — display-p3</h3>
+    <p class="meta">Wider gamut working space, supported by Chromium + Safari.</p>
+    <canvas></canvas>
+  </div>
+
+  <div class="hdr-test-tile" data-variant="canvas-rec2100"  data-source="hdr">
+    <h3>HDR canvas 2D — rec2100-pq</h3>
+    <p class="meta">PQ-aware canvas (CSS Color HDR draft). Falls back to display-p3 if unsupported.</p>
+    <canvas></canvas>
+  </div>
+
+  <div class="hdr-test-tile" data-variant="canvas-float16"  data-source="hdr">
+    <h3>HDR canvas 2D — float16 + display-p3</h3>
+    <p class="meta">Extended-range pixel format. Newest Chromium feature for true HDR canvas.</p>
+    <canvas></canvas>
+  </div>
+
+  <div class="hdr-test-tile" data-variant="webgl-p3"        data-source="hdr">
+    <h3>HDR WebGL — display-p3 swapchain</h3>
+    <p class="meta">Drawn through a fragment shader; gain applied in the shader, not via CSS.</p>
+    <canvas></canvas>
+  </div>
+
+  {# NPL=20 variants — same EXR source, encoded with linear 1.0 → 20 nits
+     (vs. 100 nits in the default hdr/ set). Bokeh balls at scene-linear
+     50-200 land at 1000-4000 nits instead of clipping at PQ peak, which
+     should leave more highlight detail without losing diffuse-white pop. #}
+  <div class="hdr-test-tile" data-variant="img-plain"   data-source="hdr-npl20">
+    <h3>HDR <code>&lt;img&gt;</code> — NPL=20</h3>
+    <p class="meta">Same path as the plain HDR tile, but the AVIF is encoded with linear 1.0 → 20 nits. Direct A/B for "is the encoded peak the bottleneck?"</p>
+    <img alt="">
+  </div>
+
+  <div class="hdr-test-tile" data-variant="canvas-p3"   data-source="hdr-npl20">
+    <h3>HDR canvas display-p3 — NPL=20</h3>
+    <p class="meta">NPL=20 source through the canvas-p3 pipeline. If this pops and the others don't, the win is encoded peak × proper canvas color space.</p>
+    <canvas></canvas>
+  </div>
+
+  {# Bright-cube variants — same scene, but ~30% of the emissive cubes
+     get a 5× brightness boost in source (deterministic Random(43) seed)
+     so a handful of bokeh balls genuinely claim HDR headroom while the
+     rest sit at modest brightness. Tests the "boost the source, not the
+     encode" hypothesis for HDR pop on phones. #}
+  <div class="hdr-test-tile" data-variant="img-plain"   data-source="hdr-bright">
+    <h3>HDR <code>&lt;img&gt;</code> — bright cubes</h3>
+    <p class="meta">Source scene with 5× boost on a deterministic 30% of the emissive cubes. Same NPL=100 encode as plain HDR. Direct A/B for "did the source brightness range matter?"</p>
+    <img alt="">
+  </div>
+
+  <div class="hdr-test-tile" data-variant="canvas-p3"   data-source="hdr-bright">
+    <h3>HDR canvas display-p3 — bright cubes</h3>
+    <p class="meta">Bright source through the canvas-p3 pipeline. If this is the only one with visible "lit pixel" pop, the answer is source brightness × proper color space.</p>
+    <canvas></canvas>
+  </div>
+
+  <div class="hdr-test-tile" data-variant="img-plain"   data-source="hdr-bright-baked-5.6">
+    <h3>HDR <code>&lt;img&gt;</code> — bright + baked@5.6</h3>
+    <p class="meta">Bright source AND iris darkening baked at f/5.6 neutral. The iris-page treatment, with the brighter scene.</p>
+    <img alt="">
+  </div>
+
+  <div class="hdr-test-tile" data-variant="canvas-p3"   data-source="hdr-bright-baked-5.6">
+    <h3>HDR canvas-p3 — bright + baked@5.6</h3>
+    <p class="meta">Same as left, through the canvas-p3 pipeline.</p>
+    <canvas></canvas>
+  </div>
+</div>
+
+<script>
+(function () {
+  const controls = document.querySelector("[data-hdr-test-controls]");
+  const grid     = document.querySelector("[data-hdr-test-grid]");
+  if (!controls || !grid) return;
+  const frameSel = controls.querySelector("[data-hdr-test-frame]");
+  const gainIn   = controls.querySelector("[data-hdr-test-gain]");
+  const natIn    = controls.querySelector("[data-hdr-test-natural]");
+
+  // Resolve a per-tile source URL given current frame + tile's data-source.
+  // data-source picks the directory: "sdr" → renders/, "hdr" → renders/hdr/,
+  // "hdr-npl20" → renders/hdr-npl20/, etc.
+  function urlFor(tile) {
+    const f = frameSel.value;
+    const src = tile.dataset.source;
+    const dir = src === "sdr" ? "renders/" : "renders/" + src + "/";
+    return staticUrl("/static/" + dir + f);
+  }
+
+  function imgVariant(tile, variant) {
+    const img = tile.querySelector("img");
+    if (!img) return;
+    img.src = urlFor(tile);
+    img.style.filter = "";
+    if (variant === "img-filter-1")    img.style.filter = "brightness(1)";
+    if (variant === "img-filter-gain") img.style.filter = `brightness(${gainIn.value})`;
+  }
+
+  // Try to make a 2D context with the requested options; return ctx + the
+  // colorSpace it actually negotiated, plus a tiny error string for the meta.
+  function tryCtx(canvas, opts) {
+    try {
+      const ctx = canvas.getContext("2d", opts);
+      if (!ctx) return { ctx: null, note: "no 2d context" };
+      // Some browsers silently downgrade colorSpace; report what's actually set.
+      const got = (ctx.getContextAttributes && ctx.getContextAttributes().colorSpace) || "?";
+      return { ctx, note: `colorSpace=${got}` };
+    } catch (e) {
+      return { ctx: null, note: String(e.message || e) };
+    }
+  }
+
+  function canvasVariant(tile, variant) {
+    const canvas = tile.querySelector("canvas");
+    const meta   = tile.querySelector(".meta");
+    if (!canvas) return;
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      let result;
+      if (variant === "canvas-srgb")    result = tryCtx(canvas, { colorSpace: "srgb" });
+      if (variant === "canvas-p3")      result = tryCtx(canvas, { colorSpace: "display-p3" });
+      if (variant === "canvas-rec2100") {
+        result = tryCtx(canvas, { colorSpace: "rec2100-pq" });
+        if (!result.ctx) {
+          const fb = tryCtx(canvas, { colorSpace: "display-p3" });
+          if (fb.ctx) result = { ctx: fb.ctx, note: `rec2100-pq unsupported → ${fb.note}` };
+        }
+      }
+      if (variant === "canvas-float16") {
+        result = tryCtx(canvas, { colorSpace: "display-p3", pixelFormat: "float16" });
+        if (!result.ctx) {
+          const fb = tryCtx(canvas, { colorSpace: "display-p3" });
+          if (fb.ctx) result = { ctx: fb.ctx, note: `float16 unsupported → ${fb.note}` };
+        }
+      }
+      if (result && result.ctx) {
+        result.ctx.drawImage(img, 0, 0);
+        if (meta) meta.dataset.actual = result.note;
+      } else if (meta) {
+        meta.dataset.actual = (result && result.note) || "ctx creation failed";
+      }
+    };
+    img.src = urlFor(tile);
+  }
+
+  function webglVariant(tile) {
+    const canvas = tile.querySelector("canvas");
+    const meta   = tile.querySelector(".meta");
+    if (!canvas) return;
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      let gl;
+      try {
+        gl = canvas.getContext("webgl2", { colorSpace: "display-p3" });
+        if (gl && gl.drawingBufferColorSpace !== undefined) {
+          gl.drawingBufferColorSpace = "display-p3";
+        }
+      } catch (e) { /* fall through */ }
+      if (!gl) {
+        if (meta) meta.dataset.actual = "no webgl2";
+        return;
+      }
+      // Minimal textured-quad pass with a uniform brightness multiplier.
+      const vs = `#version 300 es
+        in vec2 a_pos;
+        out vec2 v_uv;
+        void main() {
+          v_uv = vec2((a_pos.x + 1.0) * 0.5, 1.0 - (a_pos.y + 1.0) * 0.5);
+          gl_Position = vec4(a_pos, 0.0, 1.0);
+        }`;
+      const fs = `#version 300 es
+        precision highp float;
+        in vec2 v_uv;
+        uniform sampler2D u_tex;
+        uniform float u_gain;
+        out vec4 o_color;
+        void main() {
+          vec4 c = texture(u_tex, v_uv);
+          o_color = vec4(c.rgb * u_gain, c.a);
+        }`;
+      function compile(type, src) {
+        const sh = gl.createShader(type);
+        gl.shaderSource(sh, src);
+        gl.compileShader(sh);
+        return sh;
+      }
+      const prog = gl.createProgram();
+      gl.attachShader(prog, compile(gl.VERTEX_SHADER, vs));
+      gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fs));
+      gl.linkProgram(prog);
+      gl.useProgram(prog);
+      const buf = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+        -1,-1,  1,-1, -1, 1,
+         1,-1,  1, 1, -1, 1,
+      ]), gl.STATIC_DRAW);
+      const aPos = gl.getAttribLocation(prog, "a_pos");
+      gl.enableVertexAttribArray(aPos);
+      gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+      const tex = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      const uTex  = gl.getUniformLocation(prog, "u_tex");
+      const uGain = gl.getUniformLocation(prog, "u_gain");
+      const draw = () => {
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        gl.uniform1i(uTex, 0);
+        gl.uniform1f(uGain, parseFloat(gainIn.value) || 1);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+      };
+      draw();
+      if (meta) {
+        const got = gl.drawingBufferColorSpace || "?";
+        meta.dataset.actual = `swapchain=${got}`;
+      }
+      // Re-draw on gain change so the WebGL tile is live too.
+      tile._webglDraw = draw;
+    };
+    img.src = urlFor(tile);
+  }
+
+  function applyAll() {
+    grid.querySelectorAll(".hdr-test-tile").forEach((tile) => {
+      const v = tile.dataset.variant;
+      if (v.startsWith("img-")) imgVariant(tile, v);
+      else if (v === "webgl-p3") webglVariant(tile);
+      else canvasVariant(tile, v);
+    });
+  }
+
+  frameSel.addEventListener("change", applyAll);
+  gainIn.addEventListener("input", () => {
+    grid.querySelectorAll(".hdr-test-tile").forEach((tile) => {
+      const v = tile.dataset.variant;
+      if (v === "img-filter-gain") {
+        const img = tile.querySelector("img");
+        if (img) img.style.filter = `brightness(${gainIn.value})`;
+      } else if (v === "webgl-p3" && tile._webglDraw) {
+        tile._webglDraw();
+      }
+    });
+  });
+  natIn.addEventListener("change", () => {
+    grid.classList.toggle("natural-size", natIn.checked);
+  });
+
+  applyAll();
+
+  // Drag-to-reorder. Tiles key on data-variant + data-source; the order
+  // persists to localStorage so refreshing on the phone keeps whichever
+  // side-by-side arrangement was useful. Sortable.js is loaded via CDN
+  // above; if it didn't load (offline, CSP), the grid silently stays
+  // static and the page still works.
+  const keyOf = (t) => (t.dataset.variant || "") + "|" + (t.dataset.source || "");
+  const ORDER_KEY = "hdrTestOrder";
+  try {
+    const saved = JSON.parse(localStorage.getItem(ORDER_KEY) || "[]");
+    if (saved.length) {
+      const tiles = Array.from(grid.children);
+      const byKey = new Map(tiles.map((t) => [keyOf(t), t]));
+      const reordered = saved.map((k) => byKey.get(k)).filter(Boolean);
+      // Anything new since last visit goes at the end.
+      tiles.forEach((t) => { if (!reordered.includes(t)) reordered.push(t); });
+      reordered.forEach((t) => grid.appendChild(t));
+    }
+  } catch (_) {}
+
+  if (window.Sortable) {
+    new Sortable(grid, {
+      animation: 200,
+      ghostClass: "hdr-test-ghost",
+      chosenClass: "hdr-test-chosen",
+      // Handle at the tile header so the <canvas> + <img> still get
+      // normal touch events; browsers don't try to fight the gesture.
+      handle: "h3",
+      delay: 150,
+      delayOnTouchOnly: true,
+      onEnd: () => {
+        try {
+          const order = Array.from(grid.children).map(keyOf);
+          localStorage.setItem(ORDER_KEY, JSON.stringify(order));
+        } catch (_) {}
+      },
+    });
+  }
+})();
+</script>
+{% endblock %}
