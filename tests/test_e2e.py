@@ -85,12 +85,13 @@ def test_full_click_through(live_server):
         page.locator("#advance-btn").click()
         page.wait_for_url("**/learn/1")
 
-        # Seven lessons after the s3/s6 split: 1=iris (slider), 2=duration
-        # teaching showcase, 3=duration slider, 4=sensitivity teaching
-        # showcase, 5=sensitivity toggle, 6=sensitivity compare, 7=triangle
-        # summary. Exercise the snap slider on 1, the ISO toggle on 5, the
-        # compare divider on 6 to guard the widgets against regressions.
-        for n in range(1, 8):
+        # Eight lessons after the 2026-04-23 philosophy-slide add:
+        # 1=iris (slider), 2=duration teaching showcase, 3=duration slider,
+        # 4=sensitivity teaching showcase, 5=sensitivity toggle,
+        # 6=sensitivity compare, 7=triangle summary, 8=philosophy note.
+        # Exercise the snap slider on 1, the ISO dial on 5, the compare
+        # divider on 6 to guard the widgets against regressions.
+        for n in range(1, 9):
             assert f"/learn/{n}" in page.url
             if n == 1:
                 # Snap slider: set to last index and confirm the viewer image
@@ -110,10 +111,37 @@ def test_full_click_through(live_server):
                 src = page.evaluate("() => document.getElementById('slider-image').getAttribute('src')")
                 assert "bokeh_f32.0" in src, f"slider did not advance to last frame: {src}"
             if n == 5:
-                # Toggle group: click "High" and verify the viewer swaps.
-                page.locator('#toggle-group .toggle-btn[data-index="2"]').click()
-                src = page.evaluate("() => document.getElementById('toggle-image').getAttribute('src')")
-                assert "iso_high" in src, f"toggle did not swap image: {src}"
+                # Sensitivity is driven by a rotary dial (Aperture port,
+                # 2026-04-21) — the old `#toggle-group .toggle-btn` grid
+                # is gone. Click the dial until its aria-valuenow lands on
+                # the "High" index (2). initDial wraps modulo count, so
+                # clicking will eventually hit it regardless of default.
+                dial = page.locator(".dial")
+                assert dial.count() >= 1, "sensitivity lesson should render a .dial"
+                count = int(page.evaluate(
+                    "() => JSON.parse(document.querySelector('.dial').dataset.stops).length"
+                ))
+                for _ in range(count + 1):
+                    cur = int(page.get_attribute(".dial", "aria-valuenow") or "0")
+                    if cur == 2:
+                        break
+                    dial.click()
+                    # Dial dispatches a 'dial:change' event and eases the
+                    # hidden target input; give rAF a moment to settle.
+                    page.wait_for_timeout(60)
+                assert int(page.get_attribute(".dial", "aria-valuenow")) == 2
+                # fadeSwap keeps slot `a` (= #toggle-image) holding the
+                # prior src and flips data-showing to slot `b` on load —
+                # so read whichever slot the stack says is currently
+                # visible, not always slot a.
+                src = page.evaluate(
+                    """() => {
+                        const stack = document.getElementById('toggle-image').closest('.image-stack');
+                        const showing = stack.dataset.showing || 'a';
+                        return stack.querySelector(`img[data-slot="${showing}"]`).getAttribute('src');
+                    }"""
+                )
+                assert "iso_high" in src, f"dial did not swap image: {src}"
             if n == 6:
                 viewer = page.locator("#compare-viewer")
                 assert viewer.count() == 1
@@ -211,7 +239,8 @@ def test_locked_out_path_routes_to_result_after_last_main(live_server):
         page.locator("#advance-btn").click()
         # Fast-forward through lessons without exercising widgets — the
         # first test already covers widget regressions. Just click Advance.
-        for _ in range(1, 8):
+        # 8 lessons post-2026-04-23 (adds the philosophy slide).
+        for _ in range(1, 9):
             page.locator("#advance-btn").click()
 
         sabotage = {"1", "2"}

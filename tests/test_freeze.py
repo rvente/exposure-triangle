@@ -30,19 +30,34 @@ def _build_once():
 def test_all_flow_pages_emitted(tmp_path_factory):
     dest, _ = _build_once()
     # Full flow: intro + 7 lessons + 8 main-flow quizzes + 2 bonus quizzes +
-    # result + reference. Bonus pages are always emitted even though the
-    # runtime route guards them — LocalBackend unlocks bonus client-side and
-    # needs the HTML on disk.
+    # result + reference + /pad. Bonus pages are always emitted even though
+    # the runtime route guards them — LocalBackend unlocks bonus client-side
+    # and needs the HTML on disk. /pad is the G4 virtual-camera preview.
     expected = [
         "index.html",
         "intro/index.html",
+        "intro/why-dark/index.html",
     ]
-    expected += [f"learn/{n}/index.html" for n in range(1, 8)]
+    expected += [f"learn/{n}/index.html" for n in range(1, 9)]
     expected += [f"quiz/{n}/index.html" for n in range(1, 9)]
     expected += ["quiz/9/index.html", "quiz/10/index.html"]
-    expected += ["result/index.html", "reference/index.html"]
+    expected += ["result/index.html", "reference/index.html", "pad/index.html"]
     for rel in expected:
         assert (dest / rel).exists(), f"missing frozen page: {rel}"
+
+
+def test_pad_page_has_canvas_and_js():
+    dest, _ = _build_once()
+    html = (dest / "pad" / "index.html").read_text()
+    assert 'id="pad-live-canvas"' in html, "frozen /pad is missing the live viewfinder canvas"
+    assert 'id="pad-photo-canvas"' in html, "frozen /pad is missing the photo canvas"
+    assert "pad.js" in html, "frozen /pad is missing the pad.js script tag"
+    assert "pad.css" in html, "frozen /pad is missing the pad.css link"
+    # pad.js lives under static/js/; the file must exist in the frozen bundle.
+    pad_js = dest / "static" / "js" / "pad.js"
+    assert pad_js.exists(), "pad.js was not copied into the frozen static/"
+    pad_css = dest / "static" / "css" / "pad.css"
+    assert pad_css.exists(), "pad.css was not copied into the frozen static/"
 
 
 def test_is_static_flag_set_in_every_flow_page():

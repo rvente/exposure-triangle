@@ -206,3 +206,39 @@ def test_bonus_url_guard_skipped_in_static_mode(tmp_path):
             f"Static mode must serve bonus HTML so frozen-flask + "
             f"LocalBackend can navigate; got {r.status_code}"
         )
+
+
+def test_pad_route_serves_200(client):
+    # The G4 virtual-camera preview is a self-contained WebGL2 interactive;
+    # route serves without any session state.
+    r = client.get("/pad", follow_redirects=False)
+    assert r.status_code == 200, (
+        f"/pad should render without session state; got {r.status_code}"
+    )
+    body = r.data.decode("utf-8")
+    # Canvas pair + reused Aperture widgets + hidden inputs + snap button.
+    # The pad uses the Aperture drum/dial components (G4 #11 rework
+    # 2026-04-23, two-canvas restore 2026-04-24), so test anchors are
+    # the widget IDs, not the old 2D XY pad.
+    assert 'id="pad-live-canvas"' in body
+    assert 'id="pad-photo-canvas"' in body
+    assert 'id="pad-album-strip"' in body
+    assert 'id="iris-drum"' in body
+    assert 'id="pad-shutter-dial"' in body
+    assert 'id="pad-iso-dial"' in body
+    assert 'id="pad-iris-input"' in body
+    assert 'id="pad-shutter-input"' in body
+    assert 'id="pad-iso-input"' in body
+    assert 'id="pad-snap-btn"' in body
+    assert "pad.js" in body
+    assert "pad.css" in body
+
+
+def test_pad_route_works_in_static_mode(tmp_path):
+    # /pad is part of the frozen static build — it must not fail when the
+    # app is created with is_static=True (no session writes, no guards).
+    app = create_app(db_path=str(tmp_path / "state.db"), is_static=True)
+    app.config.update(TESTING=True, SECRET_KEY="test-secret")
+    with app.test_client() as c:
+        r = c.get("/pad", follow_redirects=False)
+        assert r.status_code == 200

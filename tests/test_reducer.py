@@ -4,6 +4,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from reducer import (
+    BONUS_GATE_MAX_MEDIAN_LATENCY_MS,
     BONUS_GATE_MIN_FIRST_TRY,
     BONUS_GATE_WINDOW,
     BONUS_QUIZ_IDS,
@@ -443,6 +444,67 @@ def test_bonus_gate_stays_locked_at_three_of_five():
     assert s.bonus_unlocked is False
 
 
+def test_bonus_gate_stays_locked_when_first_try_correct_but_slow():
+    # 5/5 first-try correct but every answer takes 30s — above the
+    # BONUS_GATE_MAX_MEDIAN_LATENCY_MS threshold. Gate stays locked:
+    # "right but slow" means the learner isn't yet bonus-ready.
+    slow_ms = BONUS_GATE_MAX_MEDIAN_LATENCY_MS * 2  # 30s
+    s = _burn_in_three((True, True, True), latency_ms_each=slow_ms)
+    s = _answer_main(s, "4", correct=True, latency_ms=slow_ms)
+    s = _answer_main(s, "5", correct=True, latency_ms=slow_ms)
+    assert s.bonus_unlocked is False, (
+        "all 5 first-try correct but median latency above threshold should "
+        "still hold the gate closed"
+    )
+
+
+def test_bonus_gate_unlocks_when_median_latency_within_threshold():
+    # 5/5 first-try correct, median latency well under the threshold.
+    fast_ms = 4000  # 4s each
+    s = _burn_in_three((True, True, True), latency_ms_each=fast_ms)
+    s = _answer_main(s, "4", correct=True, latency_ms=fast_ms)
+    s = _answer_main(s, "5", correct=True, latency_ms=fast_ms)
+    assert s.bonus_unlocked is True
+
+
+def test_bonus_gate_median_robust_to_single_slow_outlier():
+    # 5/5 first-try correct, four fast + one very slow. Median stays
+    # fast; a single distraction / coffee break shouldn't sink the gate.
+    fast_ms = 4000
+    slow_ms = 60_000
+    s = _burn_in_three((True, True, True), latency_ms_each=fast_ms)
+    s = _answer_main(s, "4", correct=True, latency_ms=slow_ms)
+    s = _answer_main(s, "5", correct=True, latency_ms=fast_ms)
+    assert s.bonus_unlocked is True, (
+        "median over [4000, 4000, 4000, 60000, 4000] = 4000 (within "
+        "threshold); a single slow answer shouldn't retract bonus"
+    )
+
+
+def test_bonus_gate_latency_uses_only_first_try_correct_answers():
+    # Answer 3 is wrong on first try + right on second; its (long) total
+    # latency should not feed into the gate's median calculation. The
+    # four FIRST-TRY correct answers are all fast, so the gate clears.
+    fast_ms = 3000
+    long_recovery_ms = 45_000  # second-chance took forever
+    s = new_state("sid")
+    s = _answer_main(s, "1", correct=True, latency_ms=fast_ms)
+    s = _answer_main(s, "2", correct=True, latency_ms=fast_ms)
+    # qid 3 wrong first, then right — long total. `_answer_main` with
+    # correct=False submits wrong twice (locks on 2nd). We need the
+    # "wrong-then-right" upgrade path, which `_answer_main` doesn't
+    # model directly; re-implement inline for this case.
+    s, _ = reduce(s, {"type": "enter", "page": "quiz", "index": 3}, 0)
+    s, _ = reduce(s, {"type": "submit_answer", "qid": "3", "choice": "z"}, fast_ms, answer_key=ANSWER_KEY)
+    s, _ = reduce(s, {"type": "submit_answer", "qid": "3", "choice": ANSWER_KEY["3"]}, long_recovery_ms, answer_key=ANSWER_KEY)
+    s = _answer_main(s, "4", correct=True, latency_ms=fast_ms)
+    s = _answer_main(s, "5", correct=True, latency_ms=fast_ms)
+    # first-try count = 4 (qids 1,2,4,5) which passes threshold; the
+    # slow qid 3 answer is NOT first-try-correct so it's excluded from
+    # the latency median. Median over [3000, 3000, 3000, 3000] = 3000 ms.
+    assert s.bonus_unlocked is True
+
+
 def test_bonus_gate_sticky_across_revisits():
     # Once bonus unlocks, a later wrong revisit of a burn-in question can
     # drop first_try_correct for that qid but the unlock stays sticky —
@@ -591,3 +653,46 @@ def test_every_post_burn_in_quiz_has_all_three_variants():
             f"q{qid} missing variants: {sorted(missing)}. Every post-burn-in "
             f"qid must carry low/medium/high variants."
         )
+
+
+def test_option_icons_only_on_low_variants():
+    """Structured quiz option `icon` field is scoped to low-difficulty
+    variants (2026-04-23 accessibility add: low-bucket learners see a
+    concept icon next to each option as a reading anchor; medium/high
+    stay icon-free so the learner reads the text themselves).
+
+    Regression guard: no `icon` on burn_in options, no `icon` on medium
+    or high variants. Low variants MAY have icons (not required on
+    every option — mixed icon+iconless within one list is allowed).
+    Icon values must be one of the 8 available SVGs in static/icons/.
+    """
+    import json
+
+    quizzes_path = Path(__file__).resolve().parent.parent / "data" / "quizzes.json"
+    quizzes = json.loads(quizzes_path.read_text())
+    icons_dir = Path(__file__).resolve().parent.parent / "static" / "icons"
+    valid_icons = {p.stem for p in icons_dir.glob("*.svg")}
+    assert valid_icons, "static/icons/ should contain SVG icons"
+
+    for qid, quiz in quizzes.items():
+        burn_in_opts = (quiz.get("burn_in") or {}).get("options") or []
+        for opt in burn_in_opts:
+            assert "icon" not in opt, (
+                f"q{qid} burn_in option {opt.get('id')!r} carries an icon "
+                f"— icons are for low variants only"
+            )
+        variants = quiz.get("variants") or {}
+        for bucket_name, bucket in variants.items():
+            opts = bucket.get("options") or []
+            for opt in opts:
+                icon_name = opt.get("icon")
+                if icon_name is None:
+                    continue
+                assert bucket_name == "low", (
+                    f"q{qid} variants.{bucket_name} option {opt.get('id')!r} "
+                    f"carries an icon — icons are for low variants only"
+                )
+                assert icon_name in valid_icons, (
+                    f"q{qid} variants.low option {opt.get('id')!r} references "
+                    f"unknown icon {icon_name!r}; valid: {sorted(valid_icons)}"
+                )
