@@ -2,7 +2,8 @@
   "1": {
     "id": "iris",
     "title": "Camera Iris",
-    "technical_term": "aperture / f-stop",
+    "technical_term": "aperture",
+    "etymology": "*Aperture* comes from the Latin *apertus*, meaning **open**. The iris is the mechanism; the aperture is the opening it leaves behind.",
     "body_md": "**Your eyes already do this.** Squinting makes distant things a little sharper — but also darker. The Camera Iris works the same way: wide open lets in more light but blurs the background; very closed keeps everything in focus but needs more light.\n\nThe side effect of a wide-open Camera Iris can be beautiful: background lights turn into soft glowing circles called *bokeh*.",
     "slider": {
       "kind": "snap",
@@ -10,7 +11,7 @@
       "ends_left": "wide open",
       "ends_right": "very closed",
       "frames": [
-        {"src": "renders/bokeh_f1.2.avif", "label": "Wide open — shallow depth of field, strong bokeh"},
+        {"src": "renders/bokeh_f1.2.avif", "label": "Wide open — strong bokeh"},
         {"src": "renders/bokeh_f1.8.avif", "label": "Wide open — noticeable bokeh"},
         {"src": "renders/bokeh_f2.8.avif", "label": "Moderately open"},
         {"src": "renders/bokeh_f4.0.avif", "label": "Moderate"},
@@ -33,9 +34,9 @@
     "body_pre": "The Camera Iris controls how *wide* the light stream is. The **Capture Duration** controls how *long* the sensor collects light.",
     "showcase": {
       "images": [
-        {"src": "renders/motion_s0.0.avif", "label": "Short — motion frozen"},
+        {"src": "renders/motion_s0.0.avif", "label": "motion frozen"},
         {"src": "renders/motion_s1.2.avif", "label": "Medium"},
-        {"src": "renders/motion_s3.5.avif", "label": "Long — motion streaking"}
+        {"src": "renders/motion_s3.5.avif", "label": "motion streaking"}
       ]
     },
     "body_post": "Sports photographers use a short Capture Duration to freeze action. Night photographers use a long one to gather light trails.\n\nA long Capture Duration makes moving subjects **streak** across the frame — we call this *motion streaking* in this lesson.",
@@ -52,14 +53,14 @@
       "ends_left": "short",
       "ends_right": "long",
       "frames": [
-        {"src": "renders/motion_s0.0.avif", "label": "Very short — motion completely frozen"},
-        {"src": "renders/motion_s0.25.avif", "label": "Short — motion frozen"},
-        {"src": "renders/motion_s0.5.avif", "label": "Short-medium — slight streaking"},
-        {"src": "renders/motion_s0.8.avif", "label": "Medium-short"},
-        {"src": "renders/motion_s1.2.avif", "label": "Medium Capture Duration"},
-        {"src": "renders/motion_s1.8.avif", "label": "Medium-long — visible motion streaking"},
-        {"src": "renders/motion_s2.5.avif", "label": "Long — strong motion streaking"},
-        {"src": "renders/motion_s3.5.avif", "label": "Very long — heavy motion streaking"}
+        {"src": "renders/motion_s0.0.avif",  "label": "motion completely frozen",   "seconds": 0.0005},
+        {"src": "renders/motion_s0.25.avif", "label": "motion frozen",              "seconds": 0.002},
+        {"src": "renders/motion_s0.5.avif",  "label": "slight streaking",           "seconds": 0.008},
+        {"src": "renders/motion_s0.8.avif",  "label": "nearly frozen",              "seconds": 0.01667},
+        {"src": "renders/motion_s1.2.avif",  "label": "moderate streaking",         "seconds": 0.0667},
+        {"src": "renders/motion_s1.8.avif",  "label": "visible motion streaking",   "seconds": 0.25},
+        {"src": "renders/motion_s2.5.avif",  "label": "strong motion streaking",    "seconds": 1.0},
+        {"src": "renders/motion_s3.5.avif",  "label": "heavy motion streaking",     "seconds": 4.0}
       ]
     },
     "metaphor_line": "The Capture Duration is how long the bucket sits in the rain.",
@@ -88,9 +89,9 @@
     "toggle": {
       "default_index": 0,
       "frames": [
-        {"src": "renders/iso_low.avif", "label": "Low sensitivity — clean, needs lots of light", "button": "Low"},
-        {"src": "renders/iso_med.avif", "label": "Medium sensitivity — slight grain", "button": "Medium"},
-        {"src": "renders/iso_high.avif", "label": "High sensitivity — bright but noisy", "button": "High"}
+        {"src": "renders/iso_night_low.avif",  "label": "Low sensitivity — clean signal, but the night reads as black", "button": "Low"},
+        {"src": "renders/iso_night_med.avif",  "label": "Medium sensitivity — image opens up, faint grain in the shadows", "button": "Medium"},
+        {"src": "renders/iso_night_high.avif", "label": "High sensitivity — fully exposed, but heavy noise everywhere", "button": "High"}
       ]
     },
     "metaphor_line": "Sensitivity is how big the bucket is — bigger catches more, but also more debris (noise).",
@@ -117,19 +118,19 @@
     "subtitle": "How the three settings share one light budget",
     "buckets": [
       {
-        "icon": "👁",
+        "icon": "eye",
         "name": "Camera Iris",
         "effect": "Wider = more light",
         "side_effect": "Side effect: shallow focus"
       },
       {
-        "icon": "⏲",
+        "icon": "timer",
         "name": "Capture Duration",
         "effect": "Longer = more light",
         "side_effect": "Side effect: motion streaking"
       },
       {
-        "icon": "⚡",
+        "icon": "zap",
         "name": "Sensor Sensitivity",
         "effect": "Higher = brighter",
         "side_effect": "Side effect: noise/grain"
@@ -137,6 +138,20 @@
     ],
     "body": "Every change is a tradeoff. Brightening with one setting lets you darken with another — and each has a side effect.",
     "insight": "The art of photography is choosing which tradeoff serves your image best.",
+    "next": "/learn/8"
+  },
+  "8": {
+    "id": "philosophy",
+    "kind": "philosophy",
+    "title": "Why the controls feel like this",
+    "subtitle": "A short note before the quiz.",
+    "paragraphs": [
+      "A real camera doesn't instantaneously jump between settings. It has weight, tactile friction, and a learning curve.",
+      "Figuring out the controls on this site is designed to mirror figuring out the controls on a real camera: you fiddle, you poke, you discover.",
+      "If you get stuck, a supportive hint appears after a pause — but only after. We'd rather let you play first.",
+      "The point isn't to teach you the words *aperture*, *shutter*, or *ISO*; it's to install the intuition the words describe."
+    ],
+    "closer": "Now — let's see what stuck.",
     "next": "/quiz/1"
   }
 }
