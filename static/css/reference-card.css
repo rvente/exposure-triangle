@@ -1,0 +1,226 @@
+/* Reference Card C2 — drop-in styles.
+   Self-contained. Uses Aperture tokens but inlines them so this folder
+   can be lifted into any project as-is. */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+.refcard {
+  --bg-0:#0b0b0c; --bg-1:#141416; --bg-2:#1c1c1f;
+  --fg-0:#f4f1ea; --fg-1:#d6d2c6; --fg-2:#9a958a; --fg-3:#6b6860; --fg-4:#403e3a;
+  --amber-3:#f3c67a; --amber-4:#e0a85a; --amber-5:#c08140;
+  --stroke-1:rgba(246,242,230,0.06); --stroke-2:rgba(246,242,230,0.10);
+  --display:'Cormorant Garamond', Georgia, serif;
+  --body:'Inter', -apple-system, sans-serif;
+  --mono:'JetBrains Mono', ui-monospace, monospace;
+
+  background: var(--bg-0);
+  color: var(--fg-1);
+  font-family: var(--body);
+  padding: 56px 60px;
+  box-sizing: border-box;
+
+  /* 80%-bleed: break out of the 860px .app-shell so the strip rows
+     have room to breathe, but keep some viewport gutter on either side.
+     `50% - 50vw` would reach the viewport edge; `50% - 40vw` halves
+     the bleed to 80vw centered. Surrounding chrome (chapter-nav,
+     page-nav) stays inside the shell padding. */
+  margin-left: calc(50% - 40vw);
+  margin-right: calc(50% - 40vw);
+}
+.refcard *, .refcard *::before, .refcard *::after { box-sizing: border-box; }
+
+/* Title + subtitle stay at shell-width (860px centered) so they line
+   up with the chapter-nav and page-nav rather than running the full
+   bled width. */
+.refcard__title {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 44px;
+  color: var(--fg-0);
+  letter-spacing: -0.015em;
+  margin: 0 auto;
+  max-width: 860px;
+}
+.refcard__sub {
+  font-family: var(--display);
+  font-style: italic;
+  font-size: 17px;
+  color: var(--fg-2);
+  margin: 4px auto 36px;
+  max-width: 860px;
+}
+
+.refcard__axis {
+  display: grid;
+  grid-template-columns: 210px 1fr;
+  gap: 24px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.refcard__axis-strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.refcard__axis-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--fg-3);
+  text-transform: uppercase;
+}
+.refcard__axis-label--more { color: var(--amber-4); }
+.refcard__axis-bar {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--fg-4) 0%, var(--amber-4) 100%);
+  margin: 0 14px;
+}
+
+.refcard__row {
+  display: grid;
+  grid-template-columns: 210px 1fr;
+  gap: 24px;
+  align-items: stretch;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--stroke-1);
+}
+
+.refcard__head { display: flex; flex-direction: column; }
+.refcard__head-line {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: var(--fg-0);
+}
+.refcard__head-icon { color: var(--fg-0); display: inline-flex; }
+.refcard__head-icon svg { display: block; }
+.refcard__head-primary {
+  font-family: var(--display);
+  font-size: 28px;
+  line-height: 1.05;
+  color: var(--fg-0);
+}
+.refcard__head-secondary {
+  font-family: var(--display);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--fg-2);
+  margin-top: 2px;
+}
+.refcard__head-plate {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--fg-3);
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+
+.refcard__strip-wrap {
+  background: var(--bg-1);
+  border: 1px solid var(--stroke-2);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.03) inset,
+    0 2px 6px rgba(0,0,0,0.55) inset;
+}
+
+.refcard__zones {
+  position: relative;
+  display: flex;
+  height: 100px;
+}
+.refcard__zone {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+.refcard__zone:not(:last-child) { border-right: 1px dashed var(--stroke-2); }
+.refcard__zone--neutral { background: rgba(246,242,230,0.03); }
+.refcard__zone--warming { background: rgba(224,168,90,0.07); }
+.refcard__zone--warm { background: rgba(224,168,90,0.14); }
+
+.refcard__zone-head { display: block; }
+.refcard__zone-num {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+.refcard__zone--neutral .refcard__zone-num { color: var(--fg-3); }
+.refcard__zone--warming .refcard__zone-num { color: var(--amber-5); }
+.refcard__zone--warm .refcard__zone-num { color: var(--amber-4); }
+
+.refcard__zone-title {
+  font-family: var(--display);
+  font-style: italic;
+  font-size: 16px;
+  margin-top: 2px;
+  line-height: 1.1;
+}
+.refcard__zone--neutral .refcard__zone-title { color: var(--fg-1); }
+.refcard__zone--warming .refcard__zone-title,
+.refcard__zone--warm .refcard__zone-title { color: var(--amber-3); }
+
+.refcard__zone-note {
+  font-size: 11px;
+  color: var(--fg-2);
+  line-height: 1.4;
+}
+
+.refcard__stops {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  border-top: 1px solid var(--stroke-1);
+  background: var(--bg-2);
+}
+.refcard__stop {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+.refcard__stop-tick {
+  width: 1px;
+  height: 12px;
+  background: var(--fg-3);
+}
+.refcard__stop-val {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--fg-1);
+}
+
+/* Narrow viewports — stack the head above the strip so neither column
+   gets crushed. The zones + stops still need horizontal room, so the
+   strip-wrap takes the full row width. */
+@media (max-width: 720px) {
+  .refcard {
+    padding: 32px 16px;
+    /* On narrow viewports, restore 100% bleed — 80vw would actually
+       be narrower than the shell and defeat the breakout. */
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+  }
+  .refcard__title { font-size: 34px; }
+  .refcard__sub { margin-bottom: 24px; }
+
+  .refcard__axis { grid-template-columns: 1fr; gap: 8px; }
+  .refcard__row { grid-template-columns: 1fr; gap: 12px; padding: 16px 0; }
+
+  .refcard__head-line { gap: 8px; }
+  .refcard__head-primary { font-size: 22px; }
+
+  .refcard__zones { height: 88px; }
+  .refcard__zone { padding: 8px 8px; }
+  .refcard__zone-title { font-size: 14px; }
+  .refcard__zone-note { font-size: 10.5px; line-height: 1.3; }
+  .refcard__stop-val { font-size: 10px; }
+}

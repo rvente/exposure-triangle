@@ -4,7 +4,7 @@
   "rows": [
     {
       "setting": "Camera Iris",
-      "icon": "👁",
+      "icon": "eye",
       "scale": "Very closed ↔ Wide open",
       "more_light": "Open wider",
       "side_effect": "Background goes blurry (shallow depth of field)",
@@ -16,7 +16,7 @@
     },
     {
       "setting": "Capture Duration",
-      "icon": "⏱",
+      "icon": "timer",
       "scale": "Short ↔ Long",
       "more_light": "Lengthen",
       "side_effect": "Moving subjects streak across the frame (technical term: *motion blur*)",
@@ -28,7 +28,7 @@
     },
     {
       "setting": "Sensor Sensitivity",
-      "icon": "⚡",
+      "icon": "zap",
       "scale": "Low ↔ High",
       "more_light": "Raise",
       "side_effect": "Image gets grainy (noise)",
